@@ -1,18 +1,22 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { mockUserProfile, mockTransactions } from '@/lib/mockData';
-import { User, Award, History, Settings } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { mockUserProfile, mockTransactions } from "@/lib/mockData";
+import { User, Award, History, Settings } from "lucide-react";
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('investments');
+  const [activeTab, setActiveTab] = useState("investments");
   const user = mockUserProfile;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-background">
+      <div
+        className="absolute inset-0 bg-contain bg-no-repeat bg-center opacity-10 py-10"
+        style={{ backgroundImage: `url(/background.png)` }}
+      />
       <Header />
 
       <section className="flex-1 py-12 px-4">
@@ -75,33 +79,33 @@ export default function ProfilePage() {
               <div className="bg-white rounded-lg shadow-sm mb-6">
                 <div className="flex border-b border-gray-200">
                   <button
-                    onClick={() => setActiveTab('investments')}
+                    onClick={() => setActiveTab("investments")}
                     className={`flex-1 px-6 py-4 font-semibold transition ${
-                      activeTab === 'investments'
-                        ? 'text-green-500 border-b-2 border-green-500'
-                        : 'text-gray-600 hover:text-gray-900'
+                      activeTab === "investments"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     <Award className="inline mr-2" size={18} />
                     Investments
                   </button>
                   <button
-                    onClick={() => setActiveTab('credits')}
+                    onClick={() => setActiveTab("credits")}
                     className={`flex-1 px-6 py-4 font-semibold transition ${
-                      activeTab === 'credits'
-                        ? 'text-green-500 border-b-2 border-green-500'
-                        : 'text-gray-600 hover:text-gray-900'
+                      activeTab === "credits"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     <Award className="inline mr-2" size={18} />
                     Carbon Credits
                   </button>
                   <button
-                    onClick={() => setActiveTab('history')}
+                    onClick={() => setActiveTab("history")}
                     className={`flex-1 px-6 py-4 font-semibold transition ${
-                      activeTab === 'history'
-                        ? 'text-green-500 border-b-2 border-green-500'
-                        : 'text-gray-600 hover:text-gray-900'
+                      activeTab === "history"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     <History className="inline mr-2" size={18} />
@@ -111,68 +115,94 @@ export default function ProfilePage() {
 
                 {/* Tab Content */}
                 <div className="p-6">
-                  {activeTab === 'investments' && (
+                  {activeTab === "investments" && (
                     <div className="space-y-4">
                       <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-gray-900">Solar Farm Initiative</h3>
+                          <h3 className="font-semibold text-gray-900">
+                            Solar Farm Initiative
+                          </h3>
                           <span className="text-green-500 font-bold">$500</span>
                         </div>
                         <p className="text-gray-600 text-sm mb-2">Kenya</p>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '75%' }} />
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
+                            style={{ width: "75%" }}
+                          />
                         </div>
                       </div>
                       <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-gray-900">Reforestation Project</h3>
+                          <h3 className="font-semibold text-gray-900">
+                            Reforestation Project
+                          </h3>
                           <span className="text-green-500 font-bold">$300</span>
                         </div>
                         <p className="text-gray-600 text-sm mb-2">Brazil</p>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '60%' }} />
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
+                            style={{ width: "60%" }}
+                          />
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {activeTab === 'credits' && (
+                  {activeTab === "credits" && (
                     <div className="space-y-4">
                       <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="font-semibold text-gray-900">Verified Carbon Credits</h3>
-                            <p className="text-gray-600 text-sm">From renewable energy projects</p>
+                            <h3 className="font-semibold text-gray-900">
+                              Verified Carbon Credits
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              From renewable energy projects
+                            </p>
                           </div>
-                          <span className="text-green-500 font-bold text-lg">250</span>
+                          <span className="text-green-500 font-bold text-lg">
+                            250
+                          </span>
                         </div>
                       </div>
                       <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="font-semibold text-gray-900">Reforestation Credits</h3>
-                            <p className="text-gray-600 text-sm">From tree planting initiatives</p>
+                            <h3 className="font-semibold text-gray-900">
+                              Reforestation Credits
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              From tree planting initiatives
+                            </p>
                           </div>
-                          <span className="text-green-500 font-bold text-lg">150</span>
+                          <span className="text-green-500 font-bold text-lg">
+                            150
+                          </span>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {activeTab === 'history' && (
+                  {activeTab === "history" && (
                     <div className="space-y-4">
-                      {mockTransactions.map(tx => (
+                      {mockTransactions.map((tx) => (
                         <div
                           key={tx.id}
                           className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition flex justify-between items-center"
                         >
                           <div>
-                            <h3 className="font-semibold text-gray-900">{tx.type}</h3>
+                            <h3 className="font-semibold text-gray-900">
+                              {tx.type}
+                            </h3>
                             <p className="text-gray-600 text-sm">
                               {tx.date.toLocaleDateString()}
                             </p>
                           </div>
-                          <span className="font-bold text-gray-900">${tx.amount}</span>
+                          <span className="font-bold text-gray-900">
+                            ${tx.amount}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -182,9 +212,12 @@ export default function ProfilePage() {
 
               {/* Hedera Integration Placeholder */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="font-bold text-blue-900 mb-2">Hedera Integration</h3>
+                <h3 className="font-bold text-blue-900 mb-2">
+                  Hedera Integration
+                </h3>
                 <p className="text-blue-800 text-sm">
-                  TODO: Fetch user transactions from Hedera account using mirror node API and display real-time transaction history
+                  TODO: Fetch user transactions from Hedera account using mirror
+                  node API and display real-time transaction history
                 </p>
               </div>
             </div>
@@ -196,4 +229,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

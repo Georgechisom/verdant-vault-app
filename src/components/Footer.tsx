@@ -1,23 +1,30 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Twitter, Linkedin, Instagram } from 'lucide-react';
+import Link from "next/link";
+import { Twitter, Linkedin, Instagram } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-gray-900 text-white py-12 px-4 md:px-12">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
-              </div>
-              <span className="font-bold text-xl">Verdant Vault</span>
+              <Link href="/" className="flex items-center gap-2">
+                <img
+                  src="/verdant-logo.png"
+                  alt="Verdant Vault Logo"
+                  className="w-8 h-8"
+                />
+                <span className="font-bold text-xl text-white text-nowrap pr-4">
+                  Verdant Vault
+                </span>
+              </Link>
             </div>
             <p className="text-gray-400 text-sm">
-              Making climate finance inclusive for green projects at the base level.
+              Making climate finance inclusive for green projects at the base
+              level.
             </p>
           </div>
 
@@ -31,12 +38,18 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/projects" className="hover:text-green-500 transition">
+                <Link
+                  href="/projects"
+                  className="hover:text-green-500 transition"
+                >
                   Projects
                 </Link>
               </li>
               <li>
-                <Link href="/carbon-credits" className="hover:text-green-500 transition">
+                <Link
+                  href="/carbon-credits"
+                  className="hover:text-green-500 transition"
+                >
                   Carbon Credits
                 </Link>
               </li>
@@ -110,4 +123,3 @@ export default function Footer() {
     </footer>
   );
 }
-

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { mockUserProfile, mockTransactions } from '@/lib/mockData';
-import { Wallet, TrendingUp, Leaf, ArrowUpRight, Settings } from 'lucide-react';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { mockUserProfile, mockTransactions } from "@/lib/mockData";
+import { Wallet, TrendingUp, Leaf, ArrowUpRight, Settings } from "lucide-react";
 
 export default function DashboardPage() {
   const [user, setUser] = useState(mockUserProfile);
@@ -13,10 +13,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Check if user is logged in
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     if (!storedUser) {
       // Redirect to register if not logged in
-      window.location.href = '/register';
+      window.location.href = "/register";
     }
   }, []);
 
@@ -27,7 +27,11 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-background">
+      <div
+        className="absolute inset-0 bg-contain bg-no-repeat bg-center opacity-10 py-10"
+        style={{ backgroundImage: `url(/background.png)` }}
+      />
       <Header />
 
       <section className="flex-1 py-8 px-4">
@@ -86,7 +90,9 @@ export default function DashboardPage() {
                 {/* Carbon Credits Card */}
                 <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-gray-600 font-semibold">Carbon Credits</h3>
+                    <h3 className="text-gray-600 font-semibold">
+                      Carbon Credits
+                    </h3>
                     <Leaf className="w-6 h-6 text-green-500" />
                   </div>
                   <p className="text-3xl font-bold text-gray-900">
@@ -98,19 +104,25 @@ export default function DashboardPage() {
                 {/* Investments Card */}
                 <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-gray-600 font-semibold">Total Invested</h3>
+                    <h3 className="text-gray-600 font-semibold">
+                      Total Invested
+                    </h3>
                     <TrendingUp className="w-6 h-6 text-green-500" />
                   </div>
                   <p className="text-3xl font-bold text-gray-900">
                     ${user.totalInvested}
                   </p>
-                  <p className="text-sm text-gray-500 mt-2">Across 5 projects</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Across 5 projects
+                  </p>
                 </div>
 
                 {/* Wallet Balance Card */}
                 <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-gray-600 font-semibold">Wallet Balance</h3>
+                    <h3 className="text-gray-600 font-semibold">
+                      Wallet Balance
+                    </h3>
                     <Wallet className="w-6 h-6 text-green-500" />
                   </div>
                   <p className="text-3xl font-bold text-gray-900">
@@ -151,7 +163,7 @@ export default function DashboardPage() {
                   Recent Transactions
                 </h2>
                 <div className="space-y-4">
-                  {mockTransactions.map(tx => (
+                  {mockTransactions.map((tx) => (
                     <div
                       key={tx.id}
                       className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
@@ -161,7 +173,9 @@ export default function DashboardPage() {
                           <ArrowUpRight className="w-5 h-5 text-green-500" />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{tx.type}</p>
+                          <p className="font-semibold text-gray-900">
+                            {tx.type}
+                          </p>
                           <p className="text-sm text-gray-500">
                             {tx.date.toLocaleDateString()}
                           </p>
@@ -181,4 +195,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
