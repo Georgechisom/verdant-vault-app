@@ -1,32 +1,30 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import WalletConnect from '@/components/WalletConnect';
+import React from "react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { WalletButton } from "@/components/WalletButton";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function RegisterPage() {
-  const handleWalletConnect = (accountId: string) => {
-    // Store wallet connection data
-    localStorage.setItem('user', JSON.stringify({
-      accountId,
-      connectedAt: new Date().toISOString(),
-    }));
-  };
-
   return (
     <div
       className="min-h-screen flex flex-col"
       style={{
         backgroundImage: "url('/images/background.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
       {/* Overlay for better readability */}
-      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      <div className="absolute inset-0 bg-black bg-opacity-30 my-20"></div>
 
       <Header />
 
@@ -34,24 +32,26 @@ export default function RegisterPage() {
         <div className="container-custom">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             {/* Wallet Connection */}
-            <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-xl p-8 shadow-xl">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Connect Your Wallet
-              </h1>
-              <p className="text-gray-600 mb-8">
-                Join Verdant Vault by connecting your HashPack wallet to start investing in sustainable projects
-              </p>
-
-              <WalletConnect onConnect={handleWalletConnect} />
-
-              {/* Sign In Link */}
-              <p className="text-center text-gray-600 mt-6">
-                Already have a wallet connected?{' '}
-                <Link href="/login" className="text-green-500 font-semibold hover:underline">
-                  Sign In
-                </Link>
-              </p>
-            </div>
+            <Card className="bg-white/95 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-3xl md:text-4xl text-gray-900">
+                  Connect Your Wallet
+                </CardTitle>
+                <CardDescription className="text-lg text-gray-600">
+                  Join Verdant Vault by connecting your wallet to start
+                  investing in sustainable projects
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4">
+                  <WalletButton mode="register" />
+                  <p className="text-sm text-gray-500 text-center">
+                    By connecting your wallet, you agree to our Terms of Service
+                    and Privacy Policy
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Visual Elements */}
             <div className="hidden md:block relative">
@@ -72,8 +72,12 @@ export default function RegisterPage() {
               ></div>
 
               <div className="absolute bottom-0 left-0 text-center text-white bg-black bg-opacity-50 rounded-lg p-4">
-                <h3 className="text-xl font-semibold mb-2">Secure & Sustainable</h3>
-                <p className="text-sm">Connect with confidence using Hedera's eco-friendly blockchain</p>
+                <h3 className="text-xl font-semibold mb-2">
+                  Secure & Sustainable
+                </h3>
+                <p className="text-sm">
+                  Connect with confidence using Hedera's eco-friendly blockchain
+                </p>
               </div>
             </div>
           </div>
@@ -84,4 +88,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

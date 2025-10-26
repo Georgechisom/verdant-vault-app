@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import toast from 'react-hot-toast';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { mockProjects } from '@/lib/mockData';
-import { ChevronRight, CheckCircle } from 'lucide-react';
+import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import toast from "react-hot-toast";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { mockProjects } from "@/lib/mockData";
+import { ChevronRight, CheckCircle } from "lucide-react";
 
 export default function InvestPage() {
   const router = useRouter();
   const params = useParams();
-  const projectId = params.projectId as string;
-  
-  const project = mockProjects.find(p => p.id === projectId);
+  const projectId = params?.projectId ?? "";
+
+  const project = mockProjects.find((p) => p.id === projectId);
   const [step, setStep] = useState(1);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!project) {
@@ -36,7 +36,7 @@ export default function InvestPage() {
 
   const handleNextStep = () => {
     if (!amount || parseFloat(amount) <= 0) {
-      toast.error('Please enter a valid amount');
+      toast.error("Please enter a valid amount");
       return;
     }
     setStep(2);
@@ -46,17 +46,17 @@ export default function InvestPage() {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       // TODO: Integrate Hedera smart contract for investment
       // const investment = await submitInvestment(projectId, parseFloat(amount), userAccountId);
-      
-      toast.success('Investment confirmed!');
+
+      toast.success("Investment confirmed!");
       setTimeout(() => {
-        router.push('/purchase-confirmation');
+        router.push("/purchase-confirmation");
       }, 1500);
     } catch (error) {
-      toast.error('Investment failed. Please try again.');
+      toast.error("Investment failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -72,30 +72,52 @@ export default function InvestPage() {
           <div className="mb-12">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                  step >= 1 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
-                }`}>
-                  {step > 1 ? <CheckCircle size={24} /> : '1'}
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                    step >= 1
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-300 text-gray-600"
+                  }`}
+                >
+                  {step > 1 ? <CheckCircle size={24} /> : "1"}
                 </div>
-                <span className="font-semibold text-gray-900">Project Selection</span>
+                <span className="font-semibold text-gray-900">
+                  Project Selection
+                </span>
               </div>
-              <ChevronRight className={step >= 2 ? 'text-green-500' : 'text-gray-300'} />
+              <ChevronRight
+                className={step >= 2 ? "text-green-500" : "text-gray-300"}
+              />
               <div className="flex items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                  step >= 2 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
-                }`}>
-                  {step > 2 ? <CheckCircle size={24} /> : '2'}
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                    step >= 2
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-300 text-gray-600"
+                  }`}
+                >
+                  {step > 2 ? <CheckCircle size={24} /> : "2"}
                 </div>
-                <span className="font-semibold text-gray-900">Investment Amount</span>
+                <span className="font-semibold text-gray-900">
+                  Investment Amount
+                </span>
               </div>
-              <ChevronRight className={step >= 3 ? 'text-green-500' : 'text-gray-300'} />
+              <ChevronRight
+                className={step >= 3 ? "text-green-500" : "text-gray-300"}
+              />
               <div className="flex items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                  step >= 3 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
-                }`}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                    step >= 3
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-300 text-gray-600"
+                  }`}
+                >
                   3
                 </div>
-                <span className="font-semibold text-gray-900">Confirmation</span>
+                <span className="font-semibold text-gray-900">
+                  Confirmation
+                </span>
               </div>
             </div>
             <div className="w-full bg-gray-300 h-1 rounded-full">
@@ -120,11 +142,15 @@ export default function InvestPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-600">Category</p>
-                    <p className="font-semibold text-gray-900">{project.category}</p>
+                    <p className="font-semibold text-gray-900">
+                      {project.category}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">Location</p>
-                    <p className="font-semibold text-gray-900">{project.location}</p>
+                    <p className="font-semibold text-gray-900">
+                      {project.location}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">Target Amount</p>
@@ -134,14 +160,13 @@ export default function InvestPage() {
                   </div>
                   <div>
                     <p className="text-gray-600">Progress</p>
-                    <p className="font-semibold text-green-500">{project.progress}%</p>
+                    <p className="font-semibold text-green-500">
+                      {project.progress}%
+                    </p>
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => setStep(2)}
-                className="w-full btn-primary"
-              >
+              <button onClick={() => setStep(2)} className="w-full btn-primary">
                 Continue to Investment Amount
               </button>
             </div>
@@ -174,12 +199,14 @@ export default function InvestPage() {
 
               {/* Payment Details */}
               <div className="bg-gray-50 rounded-lg p-6 mb-8">
-                <h3 className="font-semibold text-gray-900 mb-4">Payment Details</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">
+                  Payment Details
+                </h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Investment Amount</span>
                     <span className="font-semibold text-gray-900">
-                      ${amount || '0'}
+                      ${amount || "0"}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -191,7 +218,7 @@ export default function InvestPage() {
                   <div className="border-t border-gray-300 pt-3 flex justify-between">
                     <span className="font-semibold text-gray-900">Total</span>
                     <span className="font-bold text-lg text-green-500">
-                      ${amount || '0'}
+                      ${amount || "0"}
                     </span>
                   </div>
                 </div>
@@ -204,10 +231,7 @@ export default function InvestPage() {
                 >
                   Back
                 </button>
-                <button
-                  onClick={handleNextStep}
-                  className="flex-1 btn-primary"
-                >
+                <button onClick={handleNextStep} className="flex-1 btn-primary">
                   Review Investment
                 </button>
               </div>
@@ -221,15 +245,21 @@ export default function InvestPage() {
                 Confirm Investment
               </h2>
               <div className="border border-green-200 bg-green-50 rounded-lg p-6 mb-8">
-                <h3 className="font-semibold text-gray-900 mb-4">Investment Summary</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">
+                  Investment Summary
+                </h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Project</span>
-                    <span className="font-semibold text-gray-900">{project.title}</span>
+                    <span className="font-semibold text-gray-900">
+                      {project.title}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Investment Amount</span>
-                    <span className="font-semibold text-gray-900">${amount}</span>
+                    <span className="font-semibold text-gray-900">
+                      ${amount}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Carbon Credits</span>
@@ -252,7 +282,7 @@ export default function InvestPage() {
                   disabled={loading}
                   className="flex-1 btn-primary disabled:opacity-50"
                 >
-                  {loading ? 'Processing...' : 'Confirm Investment'}
+                  {loading ? "Processing..." : "Confirm Investment"}
                 </button>
               </div>
             </div>
@@ -264,4 +294,3 @@ export default function InvestPage() {
     </div>
   );
 }
-

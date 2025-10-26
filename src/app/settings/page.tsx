@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import toast from 'react-hot-toast';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { validateForm } from '@/lib/validation';
-import { Bell, Lock, User } from 'lucide-react';
+import { useState } from "react";
+import toast from "react-hot-toast";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { validateForm } from "@/lib/validation";
+import { Bell, Lock, User } from "lucide-react";
 
 export default function SettingsPage() {
   const [formData, setFormData] = useState({
-    email: 'john@example.com',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    email: "john@example.com",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
@@ -24,42 +24,47 @@ export default function SettingsPage() {
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+
+    if (
+      formData.newPassword &&
+      formData.newPassword !== formData.confirmPassword
+    ) {
+      toast.error("Passwords do not match");
       return;
     }
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Settings saved successfully!');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast.success("Settings saved successfully!");
     } catch (error) {
-      toast.error('Failed to save settings');
+      toast.error("Failed to save settings");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-background">
+      <div
+        className="absolute inset-0 bg-contain bg-no-repeat bg-center opacity-10 py-10"
+        style={{ backgroundImage: `url(/background.png)` }}
+      />
       <Header />
 
       <section className="flex-1 py-12 px-4">
         <div className="container-custom max-w-2xl">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Settings
-          </h1>
-          <p className="text-gray-600 mb-12">
+          <h1 className="text-4xl font-bold text-white mb-2">Settings</h1>
+          <p className="text-gray-100 mb-12">
             Manage your account and preferences
           </p>
 
@@ -143,7 +148,7 @@ export default function SettingsPage() {
                   disabled={loading}
                   className="w-full btn-primary disabled:opacity-50"
                 >
-                  {loading ? 'Saving...' : 'Save Changes'}
+                  {loading ? "Saving..." : "Save Changes"}
                 </button>
               </form>
             </div>
@@ -158,13 +163,19 @@ export default function SettingsPage() {
                 {/* Email Notifications */}
                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
                   <div>
-                    <h3 className="font-semibold text-gray-900">Email Notifications</h3>
-                    <p className="text-gray-600 text-sm">Receive email updates about your account</p>
+                    <h3 className="font-semibold text-gray-900">
+                      Email Notifications
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Receive email updates about your account
+                    </p>
                   </div>
                   <input
                     type="checkbox"
                     checked={notifications.emailNotifications}
-                    onChange={() => handleNotificationChange('emailNotifications')}
+                    onChange={() =>
+                      handleNotificationChange("emailNotifications")
+                    }
                     className="w-5 h-5 text-green-500 rounded cursor-pointer"
                   />
                 </div>
@@ -172,13 +183,17 @@ export default function SettingsPage() {
                 {/* Project Updates */}
                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
                   <div>
-                    <h3 className="font-semibold text-gray-900">Project Updates</h3>
-                    <p className="text-gray-600 text-sm">Get notified about project progress</p>
+                    <h3 className="font-semibold text-gray-900">
+                      Project Updates
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Get notified about project progress
+                    </p>
                   </div>
                   <input
                     type="checkbox"
                     checked={notifications.projectUpdates}
-                    onChange={() => handleNotificationChange('projectUpdates')}
+                    onChange={() => handleNotificationChange("projectUpdates")}
                     className="w-5 h-5 text-green-500 rounded cursor-pointer"
                   />
                 </div>
@@ -186,13 +201,17 @@ export default function SettingsPage() {
                 {/* Credit Alerts */}
                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
                   <div>
-                    <h3 className="font-semibold text-gray-900">Carbon Credit Alerts</h3>
-                    <p className="text-gray-600 text-sm">Alerts for carbon credit price changes</p>
+                    <h3 className="font-semibold text-gray-900">
+                      Carbon Credit Alerts
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Alerts for carbon credit price changes
+                    </p>
                   </div>
                   <input
                     type="checkbox"
                     checked={notifications.creditAlerts}
-                    onChange={() => handleNotificationChange('creditAlerts')}
+                    onChange={() => handleNotificationChange("creditAlerts")}
                     className="w-5 h-5 text-green-500 rounded cursor-pointer"
                   />
                 </div>
@@ -200,20 +219,26 @@ export default function SettingsPage() {
                 {/* Weekly Report */}
                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
                   <div>
-                    <h3 className="font-semibold text-gray-900">Weekly Report</h3>
-                    <p className="text-gray-600 text-sm">Receive weekly investment and impact reports</p>
+                    <h3 className="font-semibold text-gray-900">
+                      Weekly Report
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Receive weekly investment and impact reports
+                    </p>
                   </div>
                   <input
                     type="checkbox"
                     checked={notifications.weeklyReport}
-                    onChange={() => handleNotificationChange('weeklyReport')}
+                    onChange={() => handleNotificationChange("weeklyReport")}
                     className="w-5 h-5 text-green-500 rounded cursor-pointer"
                   />
                 </div>
               </div>
 
               <button
-                onClick={() => toast.success('Notification preferences updated!')}
+                onClick={() =>
+                  toast.success("Notification preferences updated!")
+                }
                 className="w-full btn-primary mt-6"
               >
                 Save Preferences
@@ -227,4 +252,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
