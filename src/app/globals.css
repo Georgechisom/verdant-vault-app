@@ -99,3 +99,9 @@ All colors MUST be HSL.
     @apply scroll-smooth;
   }
 }
+
+
+.bckgimage {
+  /* make it a global page watermark, also no repeat and center*/
+  /* background-image:  url('../../public/background.png'); */
+}

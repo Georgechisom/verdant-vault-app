@@ -1,17 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import FarmerDashboard from "@/components/FarmerDashboard";
-import InvestorDashboard from "@/components/InvestorDashboard";
-import { mockUserProfile } from "@/lib/mockData";
-import { Settings } from "lucide-react";
+import { useAccount } from "wagmi";
 
-export default function DashboardPage() {
-  // Simulate user role. In a real app, this would come from an auth context.
-  const [userRole, setUserRole] = useState(mockUserProfile.role);
+export default function ProfilePage() {
+  const { address, isConnected } = useAccount();
 
   return (
     <div className="min-h-screen flex flex-col bg-background bckgimage">
@@ -25,34 +20,47 @@ export default function DashboardPage() {
               <nav className="bg-white rounded-lg shadow-sm p-6 space-y-4">
                 <Link
                   href="/dashboard"
-                  className="block px-4 py-2 bg-green-500 text-white rounded-lg font-semibold"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 >
                   Dashboard
                 </Link>
                 <Link
-                  href="/"
+                  href="/dashboard/campaigns"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/dashboard/campaigns"
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 >
                   Campaigns
                 </Link>
                 <Link
-                  href="/profile"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                  href="/dashboard/profile"
+                  className="block px-4 py-2 bg-green-500 text-white rounded-lg font-semibold"
                 >
-                  Profile
+                  Campaigns
                 </Link>
                 <Link
-                  href="/settings"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition flex items-center gap-2"
+                  href="/dashboard/profile"
+                  className="block px-4 py-2 bg-green-500 text-white rounded-lg font-semibold"
                 >
-                  <Settings size={18} /> Settings
+                  Profile
                 </Link>
               </nav>
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              {userRole === 'investor' ? <FarmerDashboard /> : <InvestorDashboard />}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  User Profile
+                </h1>
+                <p className="text-gray-600">
+                  Manage your account information and preferences
+                </p>
+              </div>
             </div>
           </div>
         </div>

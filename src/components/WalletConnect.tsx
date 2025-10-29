@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { useHashPack } from '@/hooks/useHashPack';
+import { useWallet } from '@/hooks/useWallet';
 import { Wallet, LogOut, Loader2, AlertCircle } from 'lucide-react';
 
 interface WalletConnectProps {
@@ -20,34 +20,41 @@ export default function WalletConnect({
   const router = useRouter();
   const {
     isConnected,
-    accountId,
-    balance,
-    isLoading,
-    error,
-    connectWallet,
-    disconnectWallet,
-  } = useHashPack();
+    address,
+    connect,
+    disconnect,
+  } = useWallet();
+
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
 
   const handleConnect = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      await connectWallet();
-      if (accountId) {
+      await connect();
+      if (address) {
         toast.success('Wallet connected successfully!');
-        onConnect?.(accountId);
+        onConnect?.(address);
         // Redirect to dashboard after successful connection
         setTimeout(() => {
           router.push('/dashboard');
         }, 1500);
       }
     } catch (error) {
-      toast.error('Failed to connect wallet');
+      const e = error as Error
+      toast.error(e.message ?? 'Failed to connect wallet');
+      setError(e.message ?? 'Failed to connect wallet');
       console.error('Wallet connection error:', error);
+    } finally {
+        setIsLoading(false);
     }
   };
 
   const handleDisconnect = async () => {
     try {
-      await disconnectWallet();
+      disconnect();
       toast.success('Wallet disconnected');
     } catch (error) {
       toast.error('Failed to disconnect wallet');
@@ -75,7 +82,7 @@ export default function WalletConnect({
     );
   }
 
-  if (isConnected && accountId) {
+  if (isConnected && address) {
     return (
       <div className={`p-6 bg-green-50 border border-green-200 rounded-lg ${className}`}>
         <div className="flex items-center justify-between">
@@ -86,13 +93,8 @@ export default function WalletConnect({
             <div>
               <h3 className="font-semibold text-green-900">Wallet Connected</h3>
               <p className="text-sm text-green-700">
-                {accountId.slice(0, 8)}...{accountId.slice(-6)}
+                {address.slice(0, 8)}...{address.slice(-6)}
               </p>
-              {showBalance && balance && (
-                <p className="text-sm text-green-600">
-                  Balance: {balance} HBAR
-                </p>
-              )}
             </div>
           </div>
           <button

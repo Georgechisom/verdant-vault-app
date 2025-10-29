@@ -1,16 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { mockCarbonCredits } from "@/lib/mockData";
+import { getCarbonCreditTokenInfo, purchaseCarbonCredits } from "@/lib/hedera";
 import { Search, Filter } from "lucide-react";
 
 export default function CarbonCreditsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [totalPurchased, setTotalPurchased] = useState(0);
+  const [tokenInfo, setTokenInfo] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchTokenInfo = async () => {
+      const info = await getCarbonCreditTokenInfo();
+      setTokenInfo(info);
+    };
+    fetchTokenInfo();
+  }, []);
 
   const types = [
     "Renewable Energy",
@@ -19,17 +28,15 @@ export default function CarbonCreditsPage() {
     "Clean Water",
   ];
 
-  const filteredCredits = mockCarbonCredits.filter((credit) => {
-    const matchesSearch =
-      credit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      credit.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = !selectedType || credit.type === selectedType;
-    return matchesSearch && matchesType;
-  });
-
-  const handleBuyNow = (credit: (typeof mockCarbonCredits)[0]) => {
-    setTotalPurchased((prev) => prev + credit.price);
-    toast.success(`Added ${credit.name} to cart!`);
+  const handleBuyNow = async (price: number) => {
+    try {
+      await purchaseCarbonCredits(1, price);
+      setTotalPurchased((prev) => prev + price);
+      toast.success(`Successfully purchased 1 credit!`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to purchase credit.");
+    }
   };
 
   return (
@@ -121,52 +128,43 @@ export default function CarbonCreditsPage() {
 
               {/* Credits List */}
               <div className="space-y-4">
-                {filteredCredits.length > 0 ? (
-                  filteredCredits.map((credit) => (
-                    <div
-                      key={credit.id}
-                      className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition flex items-center justify-between"
-                    >
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">
-                          {credit.name}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-3">
-                          {credit.description}
-                        </p>
-                        <div className="flex gap-6 text-sm">
-                          <div>
-                            <p className="text-gray-600">Type</p>
-                            <p className="font-semibold text-gray-900">
-                              {credit.type}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-600">Available</p>
-                            <p className="font-semibold text-gray-900">
-                              {credit.available.toLocaleString()} units
-                            </p>
-                          </div>
+                {tokenInfo ? (
+                  <div
+                    className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition flex items-center justify-between"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">
+                        {tokenInfo.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3">
+                        {tokenInfo.symbol}
+                      </p>
+                      <div className="flex gap-6 text-sm">
+                        <div>
+                          <p className="text-gray-600">Total Supply</p>
+                          <p className="font-semibold text-gray-900">
+                            {tokenInfo.totalSupply.toLocaleString()} units
+                          </p>
                         </div>
                       </div>
-
-                      <div className="text-right ml-6">
-                        <p className="text-3xl font-bold text-green-500 mb-4">
-                          ${credit.price}
-                        </p>
-                        <button
-                          onClick={() => handleBuyNow(credit)}
-                          className="btn-primary whitespace-nowrap"
-                        >
-                          Buy Now
-                        </button>
-                      </div>
                     </div>
-                  ))
+
+                    <div className="text-right ml-6">
+                      <p className="text-3xl font-bold text-green-500 mb-4">
+                        $10
+                      </p>
+                      <button
+                        onClick={() => handleBuyNow(10)}
+                        className="btn-primary whitespace-nowrap"
+                      >
+                        Buy Now
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                     <p className="text-gray-600">
-                      No carbon credits found matching your criteria
+                      Loading token information...
                     </p>
                   </div>
                 )}
@@ -178,8 +176,7 @@ export default function CarbonCreditsPage() {
                   Hedera Integration
                 </h3>
                 <p className="text-blue-800 text-sm">
-                  TODO: Integrate search from Hedera mirror node to fetch
-                  real-time carbon credit data and pricing
+                  This page now fetches token information from the Hedera network.
                 </p>
               </div>
             </div>

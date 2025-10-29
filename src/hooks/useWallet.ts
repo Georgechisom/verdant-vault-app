@@ -1,80 +1,61 @@
-import { useCallback } from "react";
-import { useAccount, useConnect, useDisconnect, useNetwork } from "wagmi";
+import { useCallback, useEffect } from "react";
 import { useWalletStore } from "@/store/walletStore";
 import { toast } from "react-hot-toast";
-import { hederaMainnet } from "@/config/chains";
-import { InjectedConnector } from "wagmi/connectors/injected";
+import useHashConnect from "./useHashConnect";
+import { HashConnectConnectionState } from "hashconnect";
 
 export function useWallet() {
-  const { address, isConnected } = useAccount();
-  const { chain } = useNetwork();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const walletStore = useWalletStore();
+  const { hashConnect, state, pairingData } = useHashConnect();
+  const { address, isConnected, setAddress, setIsConnected, disconnect: storeDisconnect } = useWalletStore();
 
-  const handleConnect = useCallback(async () => {
-    try {
-      // Find HashPack connector first
-      const hashPackConnector = connectors.find((c) => c.id === "hashpack");
-
-      if (hashPackConnector) {
-        await connect({ connector: hashPackConnector });
-      } else {
-        // Show wallet selection modal by not specifying a connector
-        await connect();
+  // Handle pairing events
+  useEffect(() => {
+    if (pairingData?.accountIds?.[0]) {
+      const accountId = pairingData.accountIds[0];
+      if (accountId !== address) { // Only update if changed
+        setAddress(accountId);
+        setIsConnected(true);
+        toast.success("Wallet connected!");
       }
-    } catch (error: any) {
-      console.error("Connection error:", error);
-      toast.error(
-        error?.message || "Failed to connect wallet. Please try again."
-      );
     }
-  }, [connect, connectors]);
+  }, [pairingData, setAddress, setIsConnected, address]);
 
-  const handleDisconnect = useCallback(() => {
-    try {
-      disconnect();
-      walletStore.disconnect();
-      toast.success("Wallet disconnected");
-    } catch (error) {
-      console.error("Disconnect error:", error);
-      toast.error("Failed to disconnect wallet");
+  // Handle connection state changes
+  useEffect(() => {
+    if (state === HashConnectConnectionState.Disconnected && isConnected) {
+      storeDisconnect();
+      toast.error("Wallet disconnected");
     }
-  }, [disconnect, walletStore]);
+  }, [state, isConnected, storeDisconnect]);
 
-  const requestNetworkSwitch = useCallback(async () => {
-    if (!window.ethereum) {
-      toast.error("No Ethereum provider found");
+  const connect = useCallback(async () => {
+    if (!hashConnect) {
+      toast.error("HashConnect not initialized");
       return;
     }
 
     try {
-      await window.ethereum.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: `0x${hederaMainnet.id.toString(16)}`,
-            chainName: hederaMainnet.name,
-            nativeCurrency: hederaMainnet.nativeCurrency,
-            rpcUrls: hederaMainnet.rpcUrls.default.http,
-            blockExplorerUrls: [
-              hederaMainnet.blockExplorers?.default?.url,
-            ].filter(Boolean),
-          },
-        ],
-      });
+      // Open pairing modal - shows QR code and pairing string
+      hashConnect.openPairingModal();
     } catch (error) {
-      console.error("Error switching network:", error);
-      toast.error("Failed to switch network. Please try manually.");
+      console.error("Connection error:", error);
+      toast.error("Failed to connect wallet. Please try again.");
     }
-  }, []);
+  }, [hashConnect]);
+
+  const disconnect = useCallback(() => {
+    if (hashConnect) {
+      hashConnect.disconnect();
+      storeDisconnect();
+      toast.success("Wallet disconnected");
+    }
+  }, [hashConnect, storeDisconnect]);
 
   return {
     address,
     isConnected,
-    chainId: chain?.id,
-    connect: handleConnect,
-    disconnect: handleDisconnect,
-    requestNetworkSwitch,
+    connect,
+    disconnect,
+    hashConnect, // Expose for transaction signing
   };
 }

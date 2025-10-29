@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,9 +6,9 @@ import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
-import { WagmiConfig } from "wagmi";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { chains, config } from "@/config/walletConfig";
+import { WagmiProvider } from 'wagmi';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { config } from '@/lib/wagmi';
 import "@rainbow-me/rainbowkit/styles.css";
 
 interface ProvidersProps {
@@ -21,15 +21,9 @@ export function Providers({ children }: ProvidersProps) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Disable auto-refetch on window focus
             refetchOnWindowFocus: false,
-            // Disable auto-refetch on mount
             refetchOnMount: false,
-            // Disable auto-refetch on reconnect
-            refetchOnReconnect: false,
-            // Cache data for 5 minutes
             staleTime: 5 * 60 * 1000,
-            // Never mark data as stale
             cacheTime: Infinity,
           },
         },
@@ -37,23 +31,22 @@ export function Providers({ children }: ProvidersProps) {
   );
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <WagmiConfig config={config}>
-        <RainbowKitProvider chains={chains} modalSize="compact">
-          <QueryClientProvider client={queryClient}>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+          >
             <TooltipProvider>
               {children}
               <Toaster />
               <Sonner />
             </TooltipProvider>
-          </QueryClientProvider>
-        </RainbowKitProvider>
-      </WagmiConfig>
-    </ThemeProvider>
+          </ThemeProvider>
+      </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }

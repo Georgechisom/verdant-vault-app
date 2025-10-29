@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { WalletButton } from "@/components/WalletButton";
 import {
   Card,
   CardContent,
@@ -11,8 +10,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+   const { address, isConnected } = useAccount();
+   const router = useRouter()
+  
+    useEffect(() => {
+      if (isConnected && address) {
+        router.push('/dashboard')
+      }
+    }, [isConnected, address]);
+    
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -44,7 +55,9 @@ export default function RegisterPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-4">
-                  <WalletButton mode="register" />
+                  {/* <WalletButton mode="register" /> */}
+                  <ConnectButton />
+
                   <p className="text-sm text-gray-500 text-center">
                     By connecting your wallet, you agree to our Terms of Service
                     and Privacy Policy

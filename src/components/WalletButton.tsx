@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useWallet } from "@/hooks/useWallet";
+import { useHederaWallet } from "@/hooks/useHederaWallet";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -10,7 +10,7 @@ interface WalletButtonProps {
 }
 
 export function WalletButton({ mode = "header" }: WalletButtonProps) {
-  const { address, isConnected, connect, disconnect } = useWallet();
+  const { address, isConnected, connect, disconnect } = useHederaWallet();
   const router = useRouter();
 
   // Handle successful connection
@@ -26,7 +26,7 @@ export function WalletButton({ mode = "header" }: WalletButtonProps) {
     : "";
 
   // Handle button click
-  const handleClick = () => {
+  const handleClick = async () => {
     if (isConnected) {
       if (mode === "header") {
         router.push("/dashboard");
@@ -34,7 +34,7 @@ export function WalletButton({ mode = "header" }: WalletButtonProps) {
         disconnect();
       }
     } else {
-      connect();
+      await connect();
     }
   };
 
