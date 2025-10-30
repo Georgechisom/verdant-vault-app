@@ -10,13 +10,12 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background bckgimage">
-      <Header />
 
-      <section className="flex-1 py-8 px-4">
+      <section className="flex-1 py-8 px-4 pt-0">
         <div className="container-custom">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
             {/* Sidebar */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 hidden">
               <nav className="bg-white rounded-lg shadow-sm p-6 space-y-4">
                 <Link
                   href="/dashboard"
@@ -72,7 +71,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 }
