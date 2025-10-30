@@ -42,7 +42,7 @@ const HeroSection = () => {
             className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg group transition-all duration-300 shadow-lg hover:shadow-[var(--glow)]"
           >
             <Link
-              href="/register"
+              href="/dashboard"
               className="btn-primary flex items-center justify-center font-bold px-5 py-4"
             >
               Joint the Vault

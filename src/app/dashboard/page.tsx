@@ -1,64 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import FarmerDashboard from "@/components/FarmerDashboard";
 import InvestorDashboard from "@/components/InvestorDashboard";
 import { mockUserProfile } from "@/lib/mockData";
-import { Settings } from "lucide-react";
 
 export default function DashboardPage() {
-  // Simulate user role. In a real app, this would come from an auth context.
   const [userRole, setUserRole] = useState(mockUserProfile.role);
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background bckgimage">
-      <Header />
-
-      <section className="flex-1 py-8 px-4">
-        <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <nav className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-                <Link
-                  href="/dashboard"
-                  className="block px-4 py-2 bg-green-500 text-white rounded-lg font-semibold"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                >
-                  Campaigns
-                </Link>
-                <Link
-                  href="/profile"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/settings"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition flex items-center gap-2"
-                >
-                  <Settings size={18} /> Settings
-                </Link>
-              </nav>
-            </div>
-
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              {userRole === 'investor' ? <FarmerDashboard /> : <InvestorDashboard />}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
-    </div>
-  );
+  return userRole === 'farmer' ? <FarmerDashboard /> : <InvestorDashboard />;
 }

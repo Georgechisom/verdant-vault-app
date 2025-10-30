@@ -23,6 +23,49 @@ import type {
   TypedContractMethod,
 } from "./common";
 
+export declare namespace VerdantVault {
+  export type InvestmentStruct = {
+    investor: AddressLike;
+    amount: BigNumberish;
+    creditsEarned: BigNumberish;
+    creditsClaimed: boolean;
+  };
+
+  export type InvestmentStructOutput = [
+    investor: string,
+    amount: bigint,
+    creditsEarned: bigint,
+    creditsClaimed: boolean
+  ] & {
+    investor: string;
+    amount: bigint;
+    creditsEarned: bigint;
+    creditsClaimed: boolean;
+  };
+
+  export type MilestoneStruct = {
+    description: string;
+    fundPercentage: BigNumberish;
+    proofIpfsHash: string;
+    completed: boolean;
+    approved: boolean;
+  };
+
+  export type MilestoneStructOutput = [
+    description: string,
+    fundPercentage: bigint,
+    proofIpfsHash: string,
+    completed: boolean,
+    approved: boolean
+  ] & {
+    description: string;
+    fundPercentage: bigint;
+    proofIpfsHash: string;
+    completed: boolean;
+    approved: boolean;
+  };
+}
+
 export interface VerdantVaultInterface extends Interface {
   getFunction(
     nameOrSignature:
@@ -30,16 +73,24 @@ export interface VerdantVaultInterface extends Interface {
       | "approveMilestone"
       | "campaignCounter"
       | "campaigns"
+      | "carbonCreditToken"
+      | "claimCarbonCredits"
       | "claimRefund"
       | "createCampaign"
+      | "getClaimableCredits"
+      | "getInvestmentCount"
+      | "getInvestments"
+      | "getMilestoneCount"
+      | "getMilestones"
+      | "hts"
       | "invest"
-      | "mintCarbonCredits"
       | "submitMilestoneProof"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
       | "CampaignCreated"
+      | "CarbonCreditsClaimed"
       | "CarbonCreditsMinted"
       | "FundsReleased"
       | "InvestmentMade"
@@ -61,6 +112,14 @@ export interface VerdantVaultInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "carbonCreditToken",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "claimCarbonCredits",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "claimRefund",
     values: [BigNumberish]
   ): string;
@@ -69,11 +128,28 @@ export interface VerdantVaultInterface extends Interface {
     values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "invest",
+    functionFragment: "getClaimableCredits",
+    values: [BigNumberish, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getInvestmentCount",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "mintCarbonCredits",
+    functionFragment: "getInvestments",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMilestoneCount",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMilestones",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "hts", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "invest",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -92,6 +168,14 @@ export interface VerdantVaultInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "campaigns", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "carbonCreditToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "claimCarbonCredits",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "claimRefund",
     data: BytesLike
   ): Result;
@@ -99,11 +183,28 @@ export interface VerdantVaultInterface extends Interface {
     functionFragment: "createCampaign",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "invest", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "mintCarbonCredits",
+    functionFragment: "getClaimableCredits",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getInvestmentCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getInvestments",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMilestoneCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMilestones",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "hts", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "invest", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "submitMilestoneProof",
     data: BytesLike
@@ -135,7 +236,7 @@ export namespace CampaignCreatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace CarbonCreditsMintedEvent {
+export namespace CarbonCreditsClaimedEvent {
   export type InputTuple = [
     campaignId: BigNumberish,
     investor: AddressLike,
@@ -150,6 +251,22 @@ export namespace CarbonCreditsMintedEvent {
     campaignId: bigint;
     investor: string;
     amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace CarbonCreditsMintedEvent {
+  export type InputTuple = [
+    campaignId: BigNumberish,
+    totalAmount: BigNumberish
+  ];
+  export type OutputTuple = [campaignId: bigint, totalAmount: bigint];
+  export interface OutputObject {
+    campaignId: bigint;
+    totalAmount: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -299,6 +416,14 @@ export interface VerdantVault extends BaseContract {
     "view"
   >;
 
+  carbonCreditToken: TypedContractMethod<[], [string], "view">;
+
+  claimCarbonCredits: TypedContractMethod<
+    [_campaignId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   claimRefund: TypedContractMethod<
     [_campaignId: BigNumberish],
     [void],
@@ -316,13 +441,39 @@ export interface VerdantVault extends BaseContract {
     "nonpayable"
   >;
 
-  invest: TypedContractMethod<[_campaignId: BigNumberish], [void], "payable">;
-
-  mintCarbonCredits: TypedContractMethod<
-    [_campaignId: BigNumberish],
-    [void],
-    "nonpayable"
+  getClaimableCredits: TypedContractMethod<
+    [_campaignId: BigNumberish, _investor: AddressLike],
+    [[bigint, boolean] & { amount: bigint; claimed: boolean }],
+    "view"
   >;
+
+  getInvestmentCount: TypedContractMethod<
+    [_campaignId: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  getInvestments: TypedContractMethod<
+    [_campaignId: BigNumberish],
+    [VerdantVault.InvestmentStructOutput[]],
+    "view"
+  >;
+
+  getMilestoneCount: TypedContractMethod<
+    [_campaignId: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  getMilestones: TypedContractMethod<
+    [_campaignId: BigNumberish],
+    [VerdantVault.MilestoneStructOutput[]],
+    "view"
+  >;
+
+  hts: TypedContractMethod<[], [string], "view">;
+
+  invest: TypedContractMethod<[_campaignId: BigNumberish], [void], "payable">;
 
   submitMilestoneProof: TypedContractMethod<
     [
@@ -369,6 +520,12 @@ export interface VerdantVault extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "carbonCreditToken"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "claimCarbonCredits"
+  ): TypedContractMethod<[_campaignId: BigNumberish], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "claimRefund"
   ): TypedContractMethod<[_campaignId: BigNumberish], [void], "nonpayable">;
   getFunction(
@@ -384,11 +541,38 @@ export interface VerdantVault extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "getClaimableCredits"
+  ): TypedContractMethod<
+    [_campaignId: BigNumberish, _investor: AddressLike],
+    [[bigint, boolean] & { amount: bigint; claimed: boolean }],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getInvestmentCount"
+  ): TypedContractMethod<[_campaignId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getInvestments"
+  ): TypedContractMethod<
+    [_campaignId: BigNumberish],
+    [VerdantVault.InvestmentStructOutput[]],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getMilestoneCount"
+  ): TypedContractMethod<[_campaignId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getMilestones"
+  ): TypedContractMethod<
+    [_campaignId: BigNumberish],
+    [VerdantVault.MilestoneStructOutput[]],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "hts"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "invest"
   ): TypedContractMethod<[_campaignId: BigNumberish], [void], "payable">;
-  getFunction(
-    nameOrSignature: "mintCarbonCredits"
-  ): TypedContractMethod<[_campaignId: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "submitMilestoneProof"
   ): TypedContractMethod<
@@ -407,6 +591,13 @@ export interface VerdantVault extends BaseContract {
     CampaignCreatedEvent.InputTuple,
     CampaignCreatedEvent.OutputTuple,
     CampaignCreatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "CarbonCreditsClaimed"
+  ): TypedContractEvent<
+    CarbonCreditsClaimedEvent.InputTuple,
+    CarbonCreditsClaimedEvent.OutputTuple,
+    CarbonCreditsClaimedEvent.OutputObject
   >;
   getEvent(
     key: "CarbonCreditsMinted"
@@ -456,7 +647,18 @@ export interface VerdantVault extends BaseContract {
       CampaignCreatedEvent.OutputObject
     >;
 
-    "CarbonCreditsMinted(uint256,address,uint256)": TypedContractEvent<
+    "CarbonCreditsClaimed(uint256,address,uint256)": TypedContractEvent<
+      CarbonCreditsClaimedEvent.InputTuple,
+      CarbonCreditsClaimedEvent.OutputTuple,
+      CarbonCreditsClaimedEvent.OutputObject
+    >;
+    CarbonCreditsClaimed: TypedContractEvent<
+      CarbonCreditsClaimedEvent.InputTuple,
+      CarbonCreditsClaimedEvent.OutputTuple,
+      CarbonCreditsClaimedEvent.OutputObject
+    >;
+
+    "CarbonCreditsMinted(uint256,uint256)": TypedContractEvent<
       CarbonCreditsMintedEvent.InputTuple,
       CarbonCreditsMintedEvent.OutputTuple,
       CarbonCreditsMintedEvent.OutputObject

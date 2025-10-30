@@ -5,10 +5,14 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
-import { getCampaigns, getVerdantVaultContract } from "@/lib/hedera";
+// import { getCampaigns, getVerdantVaultContract } from "@/lib/hedera";
 import { FarmCampaign } from "@/lib/mockData";
 import { useHederaWallet } from "@/hooks/useHederaWallet";
 import { ethers } from "ethers";
+import GrowWealth from "@/components/GrowWealth";
+import ThreeSteps from "@/components/ThreeSteps";
+import VaultTools from "@/components/VaultTools";
+import RealReturns from "@/components/RealReturns";
 
 export default function Page() {
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
@@ -16,32 +20,32 @@ export default function Page() {
   const [campaigns, setCampaigns] = useState<FarmCampaign[]>([]);
   const { address, isConnected, connect, signer } = useHederaWallet();
 
-  useEffect(() => {
-    const fetchCampaigns = async () => {
-      const fetchedCampaigns = await getCampaigns();
-      setCampaigns(fetchedCampaigns as FarmCampaign[]);
-    };
-    fetchCampaigns();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCampaigns = async () => {
+  //     const fetchedCampaigns = await getCampaigns();
+  //     setCampaigns(fetchedCampaigns as FarmCampaign[]);
+  //   };
+  //   fetchCampaigns();
+  // }, []);
 
-  const handleInvest = async (campaignId: string, amount: number) => {
-    if (!isConnected || !signer) {
-      alert("Please connect your Hedera wallet first.");
-      return;
-    }
+  // const handleInvest = async (campaignId: string, amount: number) => {
+  //   if (!isConnected || !signer) {
+  //     alert("Please connect your Hedera wallet first.");
+  //     return;
+  //   }
 
-    try {
-      const contract = getVerdantVaultContract(signer);
-      const tx = await contract.invest(campaignId, {
-        value: ethers.utils.parseEther(amount.toString()),
-      });
-      await tx.wait();
-      alert("Investment successful!");
-    } catch (error) {
-      console.error("Investment failed:", error);
-      alert("Investment failed. Please try again.");
-    }
-  };
+  //   try {
+  //     const contract = getVerdantVaultContract(signer);
+  //     const tx = await contract.invest(campaignId, {
+  //       value: ethers.utils.parseEther(amount.toString()),
+  //     });
+  //     await tx.wait();
+  //     alert("Investment successful!");
+  //   } catch (error) {
+  //     console.error("Investment failed:", error);
+  //     alert("Investment failed. Please try again.");
+  //   }
+  // };
 
   const cropTypes = ["Maize", "Rice", "Cassava", "Beans"];
 
@@ -61,7 +65,7 @@ export default function Page() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="relative overflow-hidden">
+      <main className="relative overflow-hidden hidden">
         <HeroSection />
 
         <section className="py-12 px-4 bg-gray-50">
@@ -73,7 +77,7 @@ export default function Page() {
               Invest in sustainable agriculture and earn carbon credits
             </p>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 hidden">
               {/* Sidebar Filters */}
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-lg shadow-sm p-6 sticky top-32">
@@ -174,7 +178,7 @@ export default function Page() {
 
                           {/* Invest Button */}
                           <button
-                            onClick={() => handleInvest(campaign.id, 100)} // Example investment of 100 HBAR
+                            // onClick={() => handleInvest(campaign.id, 100)} // Example investment of 100 HBAR
                             className="w-full btn-primary text-center block"
                           >
                             Invest Now
@@ -229,6 +233,27 @@ export default function Page() {
             </div>
           </div>
         </section>
+      </main>
+      <main className="relative overflow-hidden">
+        {/* Decorative Leaves */}
+        <img
+          src="/leaf-left.png"
+          alt=""
+          className="leaf-decoration w-64 h-96 -left-20 top-20 animate-float"
+        />
+        <img
+          src="/leaf-right.png"
+          alt=""
+          className="leaf-decoration w-64 h-96 -right-20 top-[800px] animate-float"
+          style={{ animationDelay: "1s" }}
+        />
+
+        <HeroSection />
+        <GrowWealth />
+        <ThreeSteps />
+        <VaultTools />
+        <RealReturns />
+        {/* <ContactForm /> */}
       </main>
 
       <Footer />

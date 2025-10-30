@@ -60,11 +60,11 @@ export default function Header() {
         </Link>
         {/* Desktop Navigation */}
         <div
-          className={`hidden md:flex justify-between rounded-full border-2 blur-[24] md:px-4 lg:px-8 py-4 ${
-            isScrolled ? "border-[1px] border-white lg:px-10" : ""
+          className={`hidden md:flex justify-between rounded-full border-2 blur-[24] md:px-4 lg:px-1.5 py-2 ${
+            isScrolled ? "border-[1px] border-white lg:px-1.5" : ""
           }`}
         >
-          <div className="hidden md:flex items-center gap-8 md:px-4 lg:px-10 text-nowrap">
+          <div className="hidden items-center gap-8 md:px-4 lg:px-10 text-nowrap">
             <Link
               href="/"
               className="text-white hover:text-green-500 hover:font-semibold hover:italic transition"
@@ -100,7 +100,7 @@ export default function Header() {
           {/* Sign In Button */}
           <div className="hidden md:flex items-center gap-4">
             <Link
-              href="/register"
+              href="/dashboard"
               className="btn-primary bg-green-700 font-bold px-5 py-3 rounded-full text-nowrap flex md:hidden lg:flex"
             >
               Joint the Vault

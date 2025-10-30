@@ -14,10 +14,19 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
+      name: "IHederaTokenService",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IHederaTokenService__factory>;
+    getContractFactory(
       name: "VerdantVault",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.VerdantVault__factory>;
 
+    getContractAt(
+      name: "IHederaTokenService",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IHederaTokenService>;
     getContractAt(
       name: "VerdantVault",
       address: string | ethers.Addressable,
@@ -25,10 +34,19 @@ declare module "hardhat/types/runtime" {
     ): Promise<Contracts.VerdantVault>;
 
     deployContract(
+      name: "IHederaTokenService",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IHederaTokenService>;
+    deployContract(
       name: "VerdantVault",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VerdantVault>;
 
+    deployContract(
+      name: "IHederaTokenService",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IHederaTokenService>;
     deployContract(
       name: "VerdantVault",
       args: any[],
