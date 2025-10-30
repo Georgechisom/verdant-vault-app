@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const path = usePathname();
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -62,7 +65,7 @@ export default function Header() {
         <div
           className={`hidden md:flex justify-between rounded-full border-2 blur-[24] md:px-4 lg:px-1.5 py-2 ${
             isScrolled ? "border-[1px] border-white lg:px-1.5" : ""
-          }`}
+          } ${path === "/" ? "" : "border-none"}`}
         >
           <div className="hidden items-center gap-8 md:px-4 lg:px-10 text-nowrap">
             <Link
@@ -98,14 +101,18 @@ export default function Header() {
           </div>
 
           {/* Sign In Button */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="btn-primary bg-green-700 font-bold px-5 py-3 rounded-full text-nowrap flex md:hidden lg:flex"
-            >
-              Joint the Vault
-            </Link>
-          </div>
+          {path === "/" ? (
+            <div className="hidden md:flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="btn-primary bg-green-700 font-bold px-5 py-3 rounded-full text-nowrap flex md:hidden lg:flex"
+              >
+                Joint the Vault
+              </Link>
+            </div>
+          ) : (
+            <ConnectButton  />
+          )}
         </div>
 
         {/* Mobile Menu Button */}

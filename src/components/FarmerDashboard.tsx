@@ -8,7 +8,7 @@ import { Wallet, TrendingUp, Leaf, ArrowUpRight, Settings } from "lucide-react";
 
 export default function FarmerDashboard() {
   const { address, isConnected } = useAccount();
-  const { getUserCampaigns, createCampaign } = useVerdantVault();
+  const { createCampaign } = useVerdantVault();
   const [userCampaigns, setUserCampaigns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +25,7 @@ export default function FarmerDashboard() {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Farmer Dashboard
+          Dashboard
         </h1>
         <p className="text-gray-600">
           Manage your campaigns and track your funding

@@ -19,6 +19,7 @@ export default function CampaignDetails() {
   const { address } = useAccount();
 
   const { campaign, isLoading, refetch } = useCampaign(campaignId);
+  console.log({campaign})
   const {
     milestones,
     isLoading: milestonesLoading,
@@ -180,7 +181,7 @@ export default function CampaignDetails() {
                 </div>
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
                   <span>{formatUnits(raisedAmount, 8)} HBAR raised</span>
-                  <span>Goal: {formatEther(fundingGoal)} HBAR</span>
+                  <span>Goal: {formatUnits(fundingGoal, 8)} HBAR</span>
                 </div>
               </div>
 

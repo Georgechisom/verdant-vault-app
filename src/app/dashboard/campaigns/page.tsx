@@ -68,7 +68,7 @@ const CampaignCard = ({ id }: { id: number }) => {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-sm text-gray-600">Funding Goal</p>
-          <p className="font-semibold">{formatEther(fundingGoal)} HBAR</p>
+          <p className="font-semibold">{formatUnits(fundingGoal, 8)} HBAR</p>
         </div>
         <div>
           <p className="text-sm text-gray-600">Raised</p>

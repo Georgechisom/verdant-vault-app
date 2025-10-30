@@ -53,7 +53,6 @@ export default function DashboardLayout({
                     </Link>
                   );
                 })}
-                <ConnectButton/>
               </nav>
             </div>
 

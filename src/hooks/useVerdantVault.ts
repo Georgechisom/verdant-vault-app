@@ -179,7 +179,7 @@ export const useVerdantVault = () => {
       functionName: 'createCampaign',
       args: [
         ipfsMetadata,
-        parseEther(fundingGoal),
+        parseUnits(fundingGoal, 8),
         BigInt(durationDays),
         parseUnits(estimatedCO2, 18)
       ],
