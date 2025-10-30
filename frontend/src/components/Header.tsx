@@ -67,7 +67,7 @@ export default function Header() {
             isScrolled ? "border-[1px] border-white lg:px-1.5" : ""
           } ${path === "/" ? "" : "border-none"}`}
         >
-          <div className="hidden items-center gap-8 md:px-4 lg:px-10 text-nowrap">
+          <div className="flex items-center gap-8 md:px-4 lg:px-10 text-nowrap">
             <Link
               href="/"
               className="text-white hover:text-green-500 hover:font-semibold hover:italic transition"
@@ -80,17 +80,17 @@ export default function Header() {
             >
               About
             </Link>
-            <Link
+            {/* <Link
               href="/projects"
               className="text-white hover:text-green-500 hover:font-semibold transition"
             >
               Projects
-            </Link>
+            </Link> */}
             <Link
               href="/carbon-credits"
               className="text-white hover:text-green-500 hover:font-semibold transition"
             >
-              Carbon Credits
+              Carbon
             </Link>
             <Link
               href="/contact"
@@ -102,16 +102,16 @@ export default function Header() {
 
           {/* Sign In Button */}
           {path === "/" ? (
-            <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="btn-primary bg-green-700 font-bold px-5 py-3 rounded-full text-nowrap flex md:hidden lg:flex"
+                className="btn-primary bg-green-700 font-bold px-5 py-3 rounded-full text-nowrap flex"
               >
                 Joint the Vault
               </Link>
             </div>
           ) : (
-            <ConnectButton  />
+            <ConnectButton />
           )}
         </div>
 
@@ -138,17 +138,17 @@ export default function Header() {
             >
               About
             </Link>
-            <Link
+            {/* <Link
               href="/projects"
               className="text-white hover:text-white transition"
             >
               Projects
-            </Link>
+            </Link> */}
             <Link
               href="/carbon-credits"
               className="text-white hover:text-white transition"
             >
-              Carbon Credits
+              Carbon
             </Link>
             <Link
               href="/contact"
@@ -156,12 +156,19 @@ export default function Header() {
             >
               Contact
             </Link>
-            <Link
-              href="/register"
-              className="btn-primary text-center rounded-full bg-green-700 py-2 "
-            >
-              Joint the Vault
-            </Link>
+            {/* Sign In Button */}
+            {path === "/" ? (
+              <div className="flex items-center gap-4 w-full">
+                <Link
+                  href="/dashboard"
+                  className="btn-primary bg-green-700 font-bold px-5 py-2 rounded-full text-nowrap flex"
+                >
+                  Joint the Vault
+                </Link>
+              </div>
+            ) : (
+              <ConnectButton />
+            )}
           </div>
         </div>
       )}
