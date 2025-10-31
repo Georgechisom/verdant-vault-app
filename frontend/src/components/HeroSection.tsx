@@ -21,10 +21,10 @@ const HeroSection = () => {
             Verdant Vault
           </h1>
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-6">
-            Unlock Earth's Wealth for African Herbs
+            Unlock Earth's Wealth for African Roots
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Tokenize your farm's carbon impact into secure NFTs transparent
+            Tokenize your farm's carbon impact into secure NFTs—transparent
             finance on Hedera, from soil to global markets.
           </p>
 
@@ -51,7 +51,7 @@ const HeroSection = () => {
           </Button>
 
           <p className="text-sm text-muted-foreground mt-6">
-            Empowering 8M+ farmers with DMRV truth from sensors at Hedera Africa
+            Empowering 8M+ farmers with DMRV-truth from sensors at Hedera Africa
             HackerHouse
           </p>
         </div>
