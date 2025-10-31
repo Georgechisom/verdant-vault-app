@@ -239,6 +239,36 @@ Credits split proportionally among investors based on contribution percentage.
 
 ---
 
+Revenue & Sustainability
+Primary Revenue: Platform fee on investments
+
+Rate: 3% per investment transaction
+Paid by: Investors (deducted automatically)
+Flow: 100 HBAR investment → 3 HBAR to treasury, 97 HBAR to campaign
+Justification: Industry standard (GoFundMe: 2.9%, Kickstarter: 5%)
+
+Treasury Wallet: Multi-sig controlled by core team (3-of-5 consensus)
+Fee Usage:
+
+40% Platform development & maintenance
+30% Marketing & farmer onboarding
+20% Carbon credit verification partnerships
+10% Emergency fund
+
+Optional Revenue (Phase 2):
+
+Premium farmer listings: 100 HBAR for featured placement
+Carbon credit trading fee: 1% per secondary market trade
+Corporate API access: $500/month subscription
+
+Pricing Currency: HBAR (native token)
+
+UI displays USD equivalent for reference
+Avoids oracle complexity for MVP
+Investors pay gas + platform fee in HBAR
+
+---
+
 ## Demo Flow Script
 
 **Setup:** 3 pre-loaded farmer campaigns (1 funded, 1 active, 1 new)

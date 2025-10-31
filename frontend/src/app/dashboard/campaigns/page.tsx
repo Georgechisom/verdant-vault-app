@@ -128,7 +128,7 @@ const CampaignCard = ({ id }: { id: number }) => {
         </div>
       </div>
 
-      <div className="flex gap-2 hidden">
+      <div className="gap-2 hidden">
         <input
           type="number"
           step="0.01"
