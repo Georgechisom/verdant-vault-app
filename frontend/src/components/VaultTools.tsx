@@ -5,23 +5,27 @@ const tools = [
   {
     icon: FileCheck,
     title: "Irrevocable Audits",
-    description: "To your credit-logs are every carbon act. All data perm-stored on guardian network for full supply-chain trace for life."
+    description:
+      "To your credit-logs are every carbon act. All data perm-stored on guardian network for full supply-chain trace for life.",
   },
   {
     icon: Split,
     title: "Fractional Credits",
-    description: "Own 'slices' of impact from 5K—perfect for crowd-funds or co-op in-kind buyer pools."
+    description:
+      "Own 'slices' of impact from 5K—perfect for crowd-funds or co-op in-kind buyer pools.",
   },
   {
     icon: Users,
     title: "Community DAO",
-    description: "To select a grant-native credit, run co-finance. Dig new reconciliations as an NFT-governance."
+    description:
+      "To select a grant-native credit, run co-finance. Dig new reconciliations as a credit governance.",
   },
   {
     icon: Award,
     title: "Certified Rewards",
-    description: "Earn fractured NFT for ecosystem steps. Exchange for discounts, re-investment, and worldview benefits."
-  }
+    description:
+      "Earn fractured credits for ecosystem steps. Exchange for discounts, re-investment, and worldview benefits.",
+  },
 ];
 
 const VaultTools = () => {
@@ -33,14 +37,14 @@ const VaultTools = () => {
             Vault-Powered Tools for Inclusion
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Our platform provides innovative solutions designed especially for smallholder 
-            farmers across Africa's NFTs
+            Our platform provides innovative solutions designed especially for
+            farmers across Africa's Hedera tokens
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {tools.map((tool, index) => (
-            <Card 
+            <Card
               key={index}
               className="p-6 bg-card hover:shadow-[var(--card-shadow)] transition-all duration-300 hover:-translate-y-2 animate-fade-in"
               style={{ animationDelay: `${index * 0.1}s` }}

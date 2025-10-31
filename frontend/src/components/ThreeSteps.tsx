@@ -12,13 +12,13 @@ const steps = [
     icon: Shield,
     title: "Verify & Tokenize",
     description:
-      "AI validates with eco AI-IoE, pack the carbon footprint. Convert into Hedera NFTs automatically. Tamper-proof, eco.",
+      "AI validates with eco AI-IoE, pack the carbon footprint. Convert into Hedera tokens automatically. Tamper-proof, eco.",
   },
   {
     icon: RefreshCcw,
     title: "Trade & Thrive",
     description:
-      "List credits on our marketplace or for NFTs, receive payment—Hedera–HBARs pay off—or USDC. Instant cash through ecosystem.",
+      "List credits on our marketplace, receive payment Hedera HBARs pay off or USDC. Instant cash through ecosystem.",
   },
 ];
 
@@ -36,7 +36,7 @@ const ThreeSteps = () => {
           </h2>
           <p className="text-lg text-foreground max-w-2xl mx-auto">
             Our platform simplifies the process of turning your sustainable
-            farming practices into verifiable NFTs or credits
+            farming practices into verifiable Hedera tokens or credits
           </p>
         </div>
 

@@ -11,12 +11,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: "Verdant Vault - Unlock Earth's Wealth for African Roots",
   description:
-    "Tokenize your farm's carbon impact into secure NFTs. Transparent finance on Hedera, from soil to global markets. Join 8M+ African farmers building wealth.",
+    "Tokenize your farm's carbon impact into secure credits. Transparent finance on Hedera, from soil to global markets. Join 8M+ African farmers building wealth.",
   authors: [{ name: "Verdant Vault" }],
   openGraph: {
     title: "Verdant Vault - Unlock Earth's Wealth for African Roots",
     description:
-      "Tokenize your farm's carbon impact into secure NFTs. Transparent finance on Hedera, from soil to global markets.",
+      "Tokenize your farm's carbon impact into secure credit. Transparent finance on Hedera, from soil to global markets.",
     type: "website",
     siteName: "Verdant Vault",
     locale: "en_US",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     creator: "@verdant_vault_dev",
     title: "Verdant Vault - Unlock Earth's Wealth for African Roots",
     description:
-      "Tokenize your farm's carbon impact into secure NFTs. Transparent finance on Hedera, from soil to global markets.",
+      "Tokenize your farm's carbon impact into secure credit. Transparent finance on Hedera, from soil to global markets.",
   },
   robots: {
     index: true,
