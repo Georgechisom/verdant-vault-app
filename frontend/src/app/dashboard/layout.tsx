@@ -21,7 +21,7 @@ export default function DashboardLayout({
     { href: "/dashboard/create-campaign", label: "Create Campaign", icon: PlusCircle },
     { href: "/dashboard/invest", label: "Invest", icon: Wallet },
     { href: "/dashboard/profile", label: "Profile", icon: User },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    // { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
   return (
