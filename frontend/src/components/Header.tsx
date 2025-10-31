@@ -157,7 +157,7 @@ export default function Header() {
               Contact
             </Link>
             {/* Sign In Button */}
-            {path === "/" ? (
+            {!path?.includes("dashboard") ? (
               <div className="flex items-center gap-4 w-full">
                 <Link
                   href="/dashboard"
