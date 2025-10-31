@@ -50,7 +50,7 @@ export default function Footer() {
                   href="/carbon-credits"
                   className="hover:text-green-500 transition"
                 >
-                  Carbon Credits
+                  Carbon
                 </Link>
               </li>
               <li>
@@ -117,7 +117,7 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-          <p>&copy; 2024 Verdant Vault. All rights reserved.</p>
+          <p>&copy; 2025 Verdant Vault. All rights reserved.</p>
         </div>
       </div>
     </footer>

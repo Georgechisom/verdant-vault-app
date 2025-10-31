@@ -24,8 +24,9 @@ const HeroSection = () => {
             Unlock Earth's Wealth for African Herbs
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Tokenize your farm's carbon impact into secure NFTs transparent
-            finance on Hedera, from soil to global markets.
+            A Hedera powered marketplace connecting investors with African
+            farmers to fund agricultural expansion in exchange for tokenized
+            carbon credits representing verified CO2 sequestration.
           </p>
 
           {/* Stats Box */}
@@ -52,7 +53,7 @@ const HeroSection = () => {
 
           <p className="text-sm text-muted-foreground mt-6">
             Empowering 8M+ farmers with DMRV truth from sensors at Hedera Africa
-            HackerHouse
+            Marketplace
           </p>
         </div>
       </div>

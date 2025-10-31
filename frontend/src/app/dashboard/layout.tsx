@@ -5,8 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { LayoutDashboard, FolderOpen, PlusCircle, Wallet, User, PanelLeftOpen } from "lucide-react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import {
+  LayoutDashboard,
+  FolderOpen,
+  PlusCircle,
+  Wallet,
+  User,
+  PanelLeftOpen,
+} from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -16,10 +22,19 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
+  function handleAside() {
+    setCollapsed(!collapsed);
+    console.log("hello");
+  }
+
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/campaigns", label: "Campaigns", icon: FolderOpen },
-    { href: "/dashboard/create-campaign", label: "Create Campaign", icon: PlusCircle },
+    {
+      href: "/dashboard/create-campaign",
+      label: "Create Campaign",
+      icon: PlusCircle,
+    },
     { href: "/dashboard/invest", label: "Invest", icon: Wallet },
     { href: "/dashboard/profile", label: "Profile", icon: User },
     // { href: "/dashboard/settings", label: "Settings", icon: Settings },
@@ -34,8 +49,8 @@ export default function DashboardLayout({
           <div className="flex items-center justify-between mb-4">
             <button
               type="button"
-              onClick={() => setCollapsed((c) => !c)}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-md border text-sm"
+              onClick={handleAside}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm"
               aria-pressed={collapsed}
               aria-label="Toggle sidebar"
             >
@@ -45,20 +60,45 @@ export default function DashboardLayout({
               {collapsed ? "Sidebar collapsed" : "Sidebar visible"}
             </div>
           </div>
-          <div className="flex gap-6 mb-8">
+          <div className="flex flex-col lg:flex-row gap-6 mb-8">
             {/* Sidebar (collapsible: icons-only when collapsed) */}
-            <aside className={`${collapsed ? "w-16" : "w-64"} shrink-0`}>
-              <nav className={`bg-white rounded-lg shadow-sm ${collapsed ? "p-2" : "p-6"} space-y-2`}>
+            <aside
+              className={`${
+                collapsed
+                  ? "w-16 cursor-pointer hover:cursor-pointer"
+                  : "w-full lg:w-64 cursor-pointer hover:cursor-pointer"
+              } shrink-0`}
+            >
+              <nav
+                className={`bg-white rounded-lg shadow-sm ${
+                  collapsed ? "p-2" : "p-6"
+                } space-y-2`}
+              >
                 {navItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = pathname === item.href;
+                  let isActive = false;
+                  if (item.href === "/dashboard") {
+                    isActive = Boolean(pathname === "/dashboard");
+                  } else if (item.href === "/dashboard/campaigns") {
+                    isActive = Boolean(
+                      pathname === "/dashboard/campaigns" ||
+                        (pathname &&
+                          pathname.startsWith("/dashboard/campaign/"))
+                    );
+                  } else {
+                    isActive = Boolean(pathname === item.href);
+                  }
 
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} px-4 py-2.5 rounded-lg font-medium transition ${
-                        isActive ? "bg-green-500 text-white" : "text-gray-700 hover:bg-gray-100"
+                      className={`flex items-center ${
+                        collapsed ? "justify-center" : "gap-3"
+                      } px-4 py-2.5 rounded-lg font-medium transition ${
+                        isActive
+                          ? "bg-green-500 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
                       }`}
                       title={item.label}
                     >
@@ -71,13 +111,12 @@ export default function DashboardLayout({
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 max-h-[calc(100vh-200px)] overflow-y-scroll">
-              {children}
-            </div>
+            <div className="flex-1">{children}</div>
           </div>
         </div>
       </section>
 
+      <Footer />
     </div>
   );
 }

@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAccount, usePublicClient, useWatchContractEvent } from "wagmi";
 import { formatUnits } from "viem";
-import { ABI, CONTRACT_ADDRESS, useCampaignCounter } from "../../../hooks/useVerdantVault";
+import {
+  ABI,
+  CONTRACT_ADDRESS,
+  useCampaignCounter,
+} from "../../../hooks/useVerdantVault";
 
 type Tab = "farmer" | "investor";
 
@@ -49,7 +53,12 @@ export default function ProfilePage() {
         })) as any;
 
         if (!campaign) continue;
-        const [farmerAddr, , , raisedAmount] = campaign as [string, string, bigint, bigint];
+        const [farmerAddr, , , raisedAmount] = campaign as [
+          string,
+          string,
+          bigint,
+          bigint
+        ];
 
         // Farmer stats
         if (farmerAddr?.toLowerCase() === address.toLowerCase()) {
@@ -134,25 +143,26 @@ export default function ProfilePage() {
     onLogs: () => fetchAnalytics(),
   });
 
-  const addressShort =
-    address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "—";
+  const addressShort = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : "—";
 
   return (
     <div className="min-h-screen flex flex-col bg-background bckgimage">
       <section className="flex-1 py-8 px-4 pt-0">
         <div className="container-custom">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
+          <div className="mb-6 flex flex-col md:flex-row items-center justify-between">
+            <div className="flex flex-col my-4">
+              <h1 className="text-3xl font-bold text-white mb-1 text-nowrap">
                 Profile & Analytics
               </h1>
-              <p className="text-gray-600 hidden">
+              <p className="text-gray-800 hidden">
                 Wallet: {isConnected ? addressShort : "Not connected"}
               </p>
             </div>
 
             {/* Role toggle */}
-            <div className="flex items-center bg-white rounded-lg shadow-sm p-1">
+            <div className="flex items-center justify-center bg-white rounded-lg shadow-sm p-1">
               <button
                 className={`px-4 py-2 rounded-md text-sm font-medium ${
                   tab === "farmer"
@@ -194,7 +204,9 @@ export default function ProfilePage() {
               </div>
 
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <p className="text-sm text-gray-600 mb-1">Total Raised (HBAR)</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  Total Raised (HBAR)
+                </p>
                 <p className="text-2xl font-bold text-green-600">
                   {loading ? "…" : farmerStats.totalRaisedHBAR}
                 </p>
@@ -207,9 +219,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <p className="text-sm text-gray-600 mb-1">Wallet Address</p>
-                <p className="font-mono text-sm break-all">
-                  {address || "—"}
-                </p>
+                <p className="font-mono text-sm break-all">{address || "—"}</p>
               </div>
 
               <div className="bg-white rounded-lg shadow-sm p-6">
@@ -220,14 +230,18 @@ export default function ProfilePage() {
               </div>
 
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <p className="text-sm text-gray-600 mb-1">Total Invested (HBAR)</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  Total Invested (HBAR)
+                </p>
                 <p className="text-2xl font-bold text-green-600">
                   {loading ? "…" : investorStats.totalInvestedHBAR}
                 </p>
               </div>
 
               <div className="bg-white rounded-lg shadow-sm p-6 md:col-span-3">
-                <p className="text-sm text-gray-600 mb-1">CO2 Credits Earned (tons)</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  CO2 Credits Earned (tons)
+                </p>
                 <p className="text-2xl font-bold text-green-600">
                   {loading ? "…" : investorStats.co2EarnedTons}
                 </p>
