@@ -13,19 +13,20 @@ import {
   SelectValue,
 } from "../../../components/ui/select";
 
-type CropType = "Maize" | "Rice" | "Cassava" | "Beans";
+type CropType = "Maize" | "Rice" | "Cassava" | "Beans" | "Others";
 
 const CROP_FACTORS: Record<CropType, number> = {
   Maize: 10,
   Rice: 8,
   Cassava: 6,
   Beans: 5,
+  Others: 0,
 };
 
 export default function CreateCampaign() {
   const { createCampaign, hash, isPending } = useVerdantVault();
   const { isSuccess, isLoading } = useWaitForTransactionReceipt({ hash });
-  console.log({hash})
+  console.log({ hash });
 
   const [form, setForm] = useState({
     farmName: "",
@@ -77,7 +78,8 @@ export default function CreateCampaign() {
   }, [isSuccess, hash]);
 
   const onChange =
-    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (key: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
     };
 
@@ -86,7 +88,8 @@ export default function CreateCampaign() {
   };
 
   const onFiles =
-    (key: "photos" | "documents") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (key: "photos" | "documents") =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const list = Array.from(e.target.files || []);
       setFiles((prev) => ({ ...prev, [key]: list }));
     };
@@ -182,7 +185,7 @@ export default function CreateCampaign() {
           <div>
             <label className="block text-sm font-medium mb-2">Location</label>
             <Input
-              placeholder="Lagos, Nigeria"
+              placeholder="Benue, Nigeria"
               value={form.location}
               onChange={onChange("location")}
               required
@@ -190,7 +193,9 @@ export default function CreateCampaign() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Farm Size (hectares)</label>
+            <label className="block text-sm font-medium mb-2">
+              Farm Size (hectares)
+            </label>
             <Input
               type="number"
               min="0"
@@ -213,12 +218,15 @@ export default function CreateCampaign() {
                 <SelectItem value="Rice">Rice</SelectItem>
                 <SelectItem value="Cassava">Cassava</SelectItem>
                 <SelectItem value="Beans">Beans</SelectItem>
+                <SelectItem value="Others">Others</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2">Campaign Description</label>
+            <label className="block text-sm font-medium mb-2">
+              Campaign Description
+            </label>
             <Textarea
               placeholder="Tell investors your story and what the funds will be used for..."
               value={form.description}
@@ -230,7 +238,9 @@ export default function CreateCampaign() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Funding Goal (HBAR)</label>
+            <label className="block text-sm font-medium mb-2">
+              Funding Goal (HBAR)
+            </label>
             <Input
               type="number"
               step="0.01"
@@ -245,7 +255,9 @@ export default function CreateCampaign() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Duration (Days)</label>
+            <label className="block text-sm font-medium mb-2">
+              Duration (Days)
+            </label>
             <Input
               type="number"
               min="1"
@@ -257,7 +269,9 @@ export default function CreateCampaign() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Estimated CO2 (tons)</label>
+            <label className="block text-sm font-medium mb-2">
+              Estimated CO2 (tons)
+            </label>
             <Input value={estimatedCO2} readOnly className="bg-gray-50" />
             <p className="text-xs text-gray-500 mt-1">
               Auto-calculated: hectares × crop factor × (days/365)
@@ -267,18 +281,24 @@ export default function CreateCampaign() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Farm Photos</label>
+            <label className="block text-sm font-medium mb-2">
+              Farm Photos
+            </label>
             <Input
               type="file"
               accept="image/*"
               multiple
               onChange={onFiles("photos")}
             />
-            <p className="text-xs text-gray-500 mt-1">You can select multiple images.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              You can select multiple images.
+            </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Documents (PDF/Images)</label>
+            <label className="block text-sm font-medium mb-2">
+              Documents (PDF/Images)
+            </label>
             <Input
               type="file"
               accept="application/pdf,image/*"

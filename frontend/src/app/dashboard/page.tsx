@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import FarmerDashboard from "../../components/FarmerDashboard";
 import InvestorDashboard from "../../components/InvestorDashboard";
 import { useAccount, usePublicClient, useWatchContractEvent } from "wagmi";
-import { ABI, CONTRACT_ADDRESS, useCampaignCounter } from "../../hooks/useVerdantVault";
+import {
+  ABI,
+  CONTRACT_ADDRESS,
+  useCampaignCounter,
+} from "../../hooks/useVerdantVault";
+import "./css/bgImage.css";
 
 /**
  * DashboardPage
@@ -21,7 +26,8 @@ export default function DashboardPage() {
 
   type RoleOpt = "auto" | "farmer" | "investor";
   const [view, setView] = useState<RoleOpt>("auto");
-  const [detectedRole, setDetectedRole] = useState<Exclude<RoleOpt, "auto">>("investor");
+  const [detectedRole, setDetectedRole] =
+    useState<Exclude<RoleOpt, "auto">>("investor");
   const [loading, setLoading] = useState(false);
 
   const detectRole = async () => {
@@ -50,7 +56,10 @@ export default function DashboardPage() {
 
       const mine = results
         .filter(Boolean)
-        .some((data: any) => String(data[0]).toLowerCase() === address!.toLowerCase());
+        .some(
+          (data: any) =>
+            String(data[0]).toLowerCase() === address!.toLowerCase()
+        );
 
       setDetectedRole(mine ? "farmer" : "investor");
     } finally {
@@ -86,13 +95,15 @@ export default function DashboardPage() {
     view === "auto" ? detectedRole : (view as Exclude<RoleOpt, "auto">);
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-lg shadow-sm p-4 flex items-center gap-3">
-        <span className="text-sm text-gray-600">View:</span>
+    <div className="min-h-screen flex flex-col bg-background">
+      <div className="bg-white rounded-lg shadow-sm p-4 flex flex-col lg:flex-row  items-center gap-3 mb-4 z-50">
+        <span className="text-sm text-gray-600 hidden lg:flex">View:</span>
         <div className="flex gap-2">
           <button
             className={`px-3 py-1 rounded text-sm ${
-              view === "auto" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-800"
+              view === "auto"
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 text-gray-800"
             }`}
             onClick={() => setView("auto")}
           >
@@ -100,7 +111,9 @@ export default function DashboardPage() {
           </button>
           <button
             className={`px-3 py-1 rounded text-sm ${
-              view === "farmer" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-800"
+              view === "farmer"
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 text-gray-800"
             }`}
             onClick={() => setView("farmer")}
           >
@@ -108,7 +121,9 @@ export default function DashboardPage() {
           </button>
           <button
             className={`px-3 py-1 rounded text-sm ${
-              view === "investor" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-800"
+              view === "investor"
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 text-gray-800"
             }`}
             onClick={() => setView("investor")}
           >
