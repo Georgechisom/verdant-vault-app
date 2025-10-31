@@ -14,6 +14,7 @@ import {
 import { formatEther, formatUnits } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWatchContractEvent } from "wagmi";
 import { CheckCircle, Clock, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../../components/ui/dialog";
 
 export default function CampaignDetails() {
   const params = useParams();
@@ -47,12 +48,14 @@ export default function CampaignDetails() {
   const { isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const [investAmount, setInvestAmount] = useState("");
-  const [milestoneIndex, setMilestoneIndex] = useState("");
-  const [ipfsHash, setIpfsHash] = useState("");
+  const [milestoneIndex, setMilestoneIndex] = useState(""); // used for admin approve input
   const [metadata, setMetadata] = useState<any>(null);
   const [proofFiles, setProofFiles] = useState<FileList | null>(null);
   const [proofNote, setProofNote] = useState("");
   const [uploadingProof, setUploadingProof] = useState(false);
+  const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+  const [reviewMilestoneIndex, setReviewMilestoneIndex] = useState<number | null>(null);
+  const [proofMetadata, setProofMetadata] = useState<any>(null);
 
   useEffect(() => {
     if (isSuccess) {
@@ -60,7 +63,7 @@ export default function CampaignDetails() {
       refetchMilestones();
       refetchInvestments();
       setInvestAmount("");
-      setIpfsHash("");
+      // setIpfsHash("");
       setMilestoneIndex("");
     }
   }, [isSuccess, refetch, refetchMilestones, refetchInvestments]);
@@ -190,9 +193,16 @@ export default function CampaignDetails() {
     await invest(campaignId, investAmount);
   };
 
-  const handleSubmitProof = async () => {
-    if (!milestoneIndex || !ipfsHash) return;
-    await submitMilestoneProof(campaignId, Number(milestoneIndex), ipfsHash);
+  const openProofModal = async (index: number, hash: string) => {
+    setIsProofModalOpen(true);
+    setReviewMilestoneIndex(index);
+    try {
+      const res = await fetch(`https://ipfs.io/ipfs/${hash}`);
+      const data = await res.json().catch(() => null);
+      setProofMetadata(data);
+    } catch (e) {
+      setProofMetadata(null);
+    }
   };
 
   const handleApprove = async () => {
@@ -284,20 +294,74 @@ export default function CampaignDetails() {
 
               {/* Metadata */}
               {metadata && (
-                <div className="border-t pt-6">
+                <div className="border-t pt-6 space-y-4">
                   <h3 className="text-lg font-semibold mb-3">
                     Campaign Details
                   </h3>
+
+                  {metadata.farmName && (
+                    <p className="text-xl font-bold">{metadata.farmName}</p>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {metadata.location && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Location</p>
+                        <p className="font-semibold">{metadata.location}</p>
+                      </div>
+                    )}
+                    {metadata.hectares && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Farm Size</p>
+                        <p className="font-semibold">{metadata.hectares} hectares</p>
+                      </div>
+                    )}
+                    {metadata.cropType && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Crop Type</p>
+                        <p className="font-semibold">{metadata.cropType}</p>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="prose max-w-none">
                     <p className="text-gray-700">
                       {metadata.description || "No description available"}
                     </p>
-                    {metadata.location && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        📍 {metadata.location}
-                      </p>
-                    )}
                   </div>
+
+                  {Array.isArray(metadata.files) && metadata.files.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Media</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {metadata.files.map((uri: string, idx: number) => {
+                          const cid = uri.replace("ipfs://", "");
+                          const url = `https://ipfs.io/ipfs/${cid}`;
+                          return (
+                            <div key={idx} className="border rounded-lg overflow-hidden">
+                              <img
+                                src={url}
+                                alt={`Campaign media ${idx + 1}`}
+                                className="w-full h-40 object-cover bg-gray-100"
+                                onError={(e) => {
+                                  // Fallback: show link if not an image
+                                  (e.target as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block text-sm text-green-600 hover:underline p-2"
+                              >
+                                View File →
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -353,14 +417,13 @@ export default function CampaignDetails() {
                     {milestone.proofIpfsHash && (
                       <div className="mt-3 flex items-center gap-2 text-sm">
                         <FileText size={16} className="text-gray-500" />
-                        <a
-                          href={`https://ipfs.io/ipfs/${milestone.proofIpfsHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => openProofModal(index, milestone.proofIpfsHash)}
                           className="text-green-600 hover:underline"
                         >
-                          View Proof →
-                        </a>
+                          Review Proof →
+                        </button>
                       </div>
                     )}
                   </div>
@@ -453,106 +516,83 @@ export default function CampaignDetails() {
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-bold mb-4">Farmer Actions</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Submit milestone proof once work is completed. Upload files to IPFS and then submit the returned CID.
+                Upload your proof and submit in a single step. Only the next pending milestone is shown.
               </p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Milestone Index (0-3)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="3"
-                    placeholder="0"
-                    value={milestoneIndex}
-                    onChange={(e) => setMilestoneIndex(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium">Upload Proof Files (images/PDFs)</label>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*,application/pdf"
-                    onChange={(e) => setProofFiles(e.target.files)}
-                    className="w-full px-4 py-2 border rounded-lg"
-                  />
-                  <textarea
-                    placeholder="Optional note about this milestone proof"
-                    value={proofNote}
-                    onChange={(e) => setProofNote(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg"
-                    rows={3}
-                  />
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!milestoneIndex) return alert("Set a milestone index first");
-                      if (!proofFiles || proofFiles.length === 0) return alert("Select at least one file");
-                      try {
-                        setUploadingProof(true);
-                        const fd = new FormData();
-                        fd.append(
-                          "metadata",
-                          JSON.stringify({
-                            campaignId,
-                            milestoneIndex: Number(milestoneIndex),
-                            note: proofNote,
-                            schema: "verdant-vault.milestone-proof.v1",
-                          })
-                        );
-                        Array.from(proofFiles).forEach((f) => fd.append("files", f));
-                        const res = await fetch("/api/ipfs/upload", { method: "POST", body: fd });
-                        const j = await res.json();
-                        if (!res.ok) throw new Error(j?.error || "IPFS upload failed");
-                        setIpfsHash(j.cid);
-                      } catch (e: any) {
-                        alert(e?.message || "Upload failed");
-                      } finally {
-                        setUploadingProof(false);
-                      }
-                    }}
-                    disabled={uploadingProof || !milestoneIndex}
-                    className="w-full py-2 bg-gray-800 text-white rounded-lg disabled:bg-gray-400 hover:bg-gray-900 transition"
-                  >
-                    {uploadingProof ? "Uploading to IPFS..." : "Upload Files to IPFS"}
-                  </button>
-                </div>
+              {(() => {
+                const nextIndex = Array.isArray(milestones)
+                  ? milestones.findIndex((m: any) => !m.completed)
+                  : -1;
+                const nextMilestone = nextIndex >= 0 ? milestones?.[nextIndex] : null;
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Proof IPFS CID
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="QmXxx..."
-                    value={ipfsHash}
-                    onChange={(e) => setIpfsHash(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  {ipfsHash && (
-                    <a
-                      href={`https://ipfs.io/ipfs/${ipfsHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-600 hover:underline text-sm mt-2 inline-block"
-                    >
-                      Preview proof on IPFS →
-                    </a>
-                  )}
-                </div>
+                if (nextIndex < 0 || !nextMilestone) {
+                  return <p className="text-green-700">All milestones have been submitted.</p>;
+                }
 
-                <button
-                  onClick={handleSubmitProof}
-                  disabled={isLoading || !milestoneIndex || !ipfsHash}
-                  className="w-full py-2 bg-blue-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-blue-700 transition"
-                >
-                  {isLoading ? "Submitting..." : "Submit Proof"}
-                </button>
-              </div>
+                return (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Next Milestone</p>
+                      <p className="font-semibold">
+                        #{nextIndex} — {nextMilestone.description} ({nextMilestone.fundPercentage}%)
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium">Upload Proof Files (images/PDFs)</label>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,application/pdf"
+                        onChange={(e) => setProofFiles(e.target.files)}
+                        className="w-full px-4 py-2 border rounded-lg"
+                      />
+                      <textarea
+                        placeholder="Optional note about this milestone proof"
+                        value={proofNote}
+                        onChange={(e) => setProofNote(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg"
+                        rows={3}
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!proofFiles || proofFiles.length === 0) return alert("Select at least one file");
+                          try {
+                            setUploadingProof(true);
+                            const fd = new FormData();
+                            fd.append(
+                              "metadata",
+                              JSON.stringify({
+                                campaignId,
+                                milestoneIndex: nextIndex,
+                                note: proofNote,
+                                schema: "verdant-vault.milestone-proof.v1",
+                              })
+                            );
+                            Array.from(proofFiles).forEach((f) => fd.append("files", f));
+                            const res = await fetch("/api/ipfs/upload", { method: "POST", body: fd });
+                            const j = await res.json();
+                            if (!res.ok) throw new Error(j?.error || "IPFS upload failed");
+
+                            await submitMilestoneProof(campaignId, nextIndex, j.cid);
+                          } catch (e: any) {
+                            alert(e?.message || "Upload/submit failed");
+                          } finally {
+                            setUploadingProof(false);
+                            setProofFiles(null);
+                            setProofNote("");
+                          }
+                        }}
+                        disabled={uploadingProof}
+                        className="w-full py-2 bg-blue-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-blue-700 transition"
+                      >
+                        {uploadingProof ? "Uploading & Submitting..." : "Upload & Submit Proof"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -594,6 +634,94 @@ export default function CampaignDetails() {
           )}
         </div>
       </div>
+
+      {/* Proof Review Modal */}
+      {isProofModalOpen && (
+        <Dialog open={isProofModalOpen} onOpenChange={setIsProofModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Milestone Proof Review</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              {reviewMilestoneIndex !== null && milestones?.[reviewMilestoneIndex] && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">Milestone</p>
+                  <p className="font-semibold text-black">
+                    #{reviewMilestoneIndex} — {milestones[reviewMilestoneIndex].description} ({milestones[reviewMilestoneIndex].fundPercentage}%)
+                  </p>
+                </div>
+              )}
+
+              {proofMetadata ? (
+                <>
+                  {proofMetadata.note && (
+                    <p className="text-white">Note: {proofMetadata.note}</p>
+                  )}
+                  {Array.isArray(proofMetadata.files) && proofMetadata.files.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {proofMetadata.files.map((uri: string, idx: number) => {
+                        const cid = uri.replace("ipfs://", "");
+                        const url = `https://ipfs.io/ipfs/${cid}`;
+                        return (
+                          <div key={idx} className="border rounded-lg overflow-hidden">
+                            <img
+                              src={url}
+                              alt={`Proof media ${idx + 1}`}
+                              className="w-full h-32 object-cover bg-gray-100"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-sm text-green-600 hover:underline p-2"
+                            >
+                              View File →
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                reviewMilestoneIndex !== null &&
+                milestones?.[reviewMilestoneIndex]?.proofIpfsHash && (
+                  <a
+                    href={`https://ipfs.io/ipfs/${milestones[reviewMilestoneIndex].proofIpfsHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:underline"
+                  >
+                    Open proof on IPFS →
+                  </a>
+                )
+              )}
+            </div>
+
+            <DialogFooter>
+              {isAdmin &&
+                reviewMilestoneIndex !== null &&
+                milestones?.[reviewMilestoneIndex] &&
+                !milestones[reviewMilestoneIndex].approved && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await approveMilestone(campaignId, reviewMilestoneIndex!);
+                      setIsProofModalOpen(false);
+                    }}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  >
+                    Approve Milestone
+                  </button>
+                )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
