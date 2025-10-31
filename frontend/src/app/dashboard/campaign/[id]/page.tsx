@@ -7,16 +7,22 @@ import {
   useVerdantVault,
   useMilestones,
   useInvestments,
+  useAdmin,
+  ABI,
+  CONTRACT_ADDRESS,
 } from "../../../../hooks/useVerdantVault";
 import { formatEther, formatUnits } from "viem";
-import { useAccount, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWaitForTransactionReceipt, useWatchContractEvent } from "wagmi";
 import { CheckCircle, Clock, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../../components/ui/dialog";
 
 export default function CampaignDetails() {
   const params = useParams();
   const router = useRouter();
   const campaignId = Number(params?.id);
   const { address } = useAccount();
+  const { adminAddress } = useAdmin();
+  console.log(adminAddress)
 
   const { campaign, isLoading, refetch } = useCampaign(campaignId);
   console.log({campaign})
@@ -42,9 +48,14 @@ export default function CampaignDetails() {
   const { isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const [investAmount, setInvestAmount] = useState("");
-  const [milestoneIndex, setMilestoneIndex] = useState("");
-  const [ipfsHash, setIpfsHash] = useState("");
+  const [milestoneIndex, setMilestoneIndex] = useState(""); // used for admin approve input
   const [metadata, setMetadata] = useState<any>(null);
+  const [proofFiles, setProofFiles] = useState<FileList | null>(null);
+  const [proofNote, setProofNote] = useState("");
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+  const [reviewMilestoneIndex, setReviewMilestoneIndex] = useState<number | null>(null);
+  const [proofMetadata, setProofMetadata] = useState<any>(null);
 
   useEffect(() => {
     if (isSuccess) {
@@ -52,7 +63,7 @@ export default function CampaignDetails() {
       refetchMilestones();
       refetchInvestments();
       setInvestAmount("");
-      setIpfsHash("");
+      // setIpfsHash("");
       setMilestoneIndex("");
     }
   }, [isSuccess, refetch, refetchMilestones, refetchInvestments]);
@@ -62,6 +73,60 @@ export default function CampaignDetails() {
       fetchMetadata(campaign[1]);
     }
   }, [campaign]);
+
+  // Watch on-chain events and refetch data (keeps UI in sync)
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "InvestmentMade",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+      refetchInvestments();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "MilestoneProofSubmitted",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetchMilestones();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "MilestoneApproved",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+      refetchMilestones();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "FundsReleased",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "CarbonCreditsMinted",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+      refetchInvestments();
+    },
+  });
 
   const fetchMetadata = async (ipfsHash: string) => {
     try {
@@ -98,13 +163,14 @@ export default function CampaignDetails() {
     estimatedCO2Tons,
     status,
   ] = campaign;
-  const progress =
-    Number(raisedAmount) > 0
-      ? Number(formatUnits(raisedAmount, 8))/ Number(formatEther(fundingGoal)) * 100
-      : 0;
+  const raisedHBAR = Number(formatUnits(raisedAmount, 8));
+  const goalHBAR = Number(formatUnits(fundingGoal, 8));
+  const progress = goalHBAR > 0 ? (raisedHBAR / goalHBAR) * 100 : 0;
+  console.log({goalHBAR, raisedHBAR})
   const isExpired = Number(deadline) * 1000 < Date.now();
   const isFarmer = address?.toLowerCase() === farmer.toLowerCase();
-  console.log(isFarmer);
+  const isAdmin = !!adminAddress && !!address && adminAddress.toLowerCase() === address.toLowerCase();
+  console.log({ isFarmer, isAdmin });
 
   const getStatusText = (status: number) => {
     const statuses = ["Active", "Funded", "Completed", "Failed", "Canceled"];
@@ -127,9 +193,16 @@ export default function CampaignDetails() {
     await invest(campaignId, investAmount);
   };
 
-  const handleSubmitProof = async () => {
-    if (!milestoneIndex || !ipfsHash) return;
-    await submitMilestoneProof(campaignId, Number(milestoneIndex), ipfsHash);
+  const openProofModal = async (index: number, hash: string) => {
+    setIsProofModalOpen(true);
+    setReviewMilestoneIndex(index);
+    try {
+      const res = await fetch(`https://ipfs.io/ipfs/${hash}`);
+      const data = await res.json().catch(() => null);
+      setProofMetadata(data);
+    } catch (e) {
+      setProofMetadata(null);
+    }
   };
 
   const handleApprove = async () => {
@@ -138,7 +211,7 @@ export default function CampaignDetails() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 text-black pt-0">
+    <div className="min-h-screen flex flex-col bg-background bckgimage text-black">
       <button
         onClick={() => router.back()}
         className="mb-6 text-green-600 hover:text-green-700 flex items-center gap-2"
@@ -221,20 +294,74 @@ export default function CampaignDetails() {
 
               {/* Metadata */}
               {metadata && (
-                <div className="border-t pt-6">
+                <div className="border-t pt-6 space-y-4">
                   <h3 className="text-lg font-semibold mb-3">
                     Campaign Details
                   </h3>
+
+                  {metadata.farmName && (
+                    <p className="text-xl font-bold">{metadata.farmName}</p>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {metadata.location && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Location</p>
+                        <p className="font-semibold">{metadata.location}</p>
+                      </div>
+                    )}
+                    {metadata.hectares && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Farm Size</p>
+                        <p className="font-semibold">{metadata.hectares} hectares</p>
+                      </div>
+                    )}
+                    {metadata.cropType && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Crop Type</p>
+                        <p className="font-semibold">{metadata.cropType}</p>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="prose max-w-none">
                     <p className="text-gray-700">
                       {metadata.description || "No description available"}
                     </p>
-                    {metadata.location && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        📍 {metadata.location}
-                      </p>
-                    )}
                   </div>
+
+                  {Array.isArray(metadata.files) && metadata.files.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Media</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {metadata.files.map((uri: string, idx: number) => {
+                          const cid = uri.replace("ipfs://", "");
+                          const url = `https://ipfs.io/ipfs/${cid}`;
+                          return (
+                            <div key={idx} className="border rounded-lg overflow-hidden">
+                              <img
+                                src={url}
+                                alt={`Campaign media ${idx + 1}`}
+                                className="w-full h-40 object-cover bg-gray-100"
+                                onError={(e) => {
+                                  // Fallback: show link if not an image
+                                  (e.target as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block text-sm text-green-600 hover:underline p-2"
+                              >
+                                View File →
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -290,14 +417,13 @@ export default function CampaignDetails() {
                     {milestone.proofIpfsHash && (
                       <div className="mt-3 flex items-center gap-2 text-sm">
                         <FileText size={16} className="text-gray-500" />
-                        <a
-                          href={`https://ipfs.io/ipfs/${milestone.proofIpfsHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => openProofModal(index, milestone.proofIpfsHash)}
                           className="text-green-600 hover:underline"
                         >
-                          View Proof →
-                        </a>
+                          Review Proof →
+                        </button>
                       </div>
                     )}
                   </div>
@@ -327,9 +453,9 @@ export default function CampaignDetails() {
                         {investment.investor.slice(0, 6)}...
                         {investment.investor.slice(-4)}
                       </p>
-                      {investment.creditsClaimed > 0 && (
+                      {investment.creditsEarned > 0 && (
                         <p className="text-xs text-green-600 mt-1">
-                          Credits: {formatUnits(investment.creditsClaimed, 18)}{" "}
+                          Credits: {formatUnits(investment.creditsEarned, 18)}{" "}
                           tons
                         </p>
                       )}
@@ -386,13 +512,98 @@ export default function CampaignDetails() {
           )}
 
           {/* Farmer Actions */}
-          {isFarmer && status === 0 && (
+          {isFarmer && status === 1 && (
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-bold mb-4">Farmer Actions</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload your proof and submit in a single step. Only the next pending milestone is shown.
+              </p>
+
+              {(() => {
+                const nextIndex = Array.isArray(milestones)
+                  ? milestones.findIndex((m: any) => !m.completed)
+                  : -1;
+                const nextMilestone = nextIndex >= 0 ? milestones?.[nextIndex] : null;
+
+                if (nextIndex < 0 || !nextMilestone) {
+                  return <p className="text-green-700">All milestones have been submitted.</p>;
+                }
+
+                return (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Next Milestone</p>
+                      <p className="font-semibold">
+                        #{nextIndex} — {nextMilestone.description} ({nextMilestone.fundPercentage}%)
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium">Upload Proof Files (images/PDFs)</label>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,application/pdf"
+                        onChange={(e) => setProofFiles(e.target.files)}
+                        className="w-full px-4 py-2 border rounded-lg"
+                      />
+                      <textarea
+                        placeholder="Optional note about this milestone proof"
+                        value={proofNote}
+                        onChange={(e) => setProofNote(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg"
+                        rows={3}
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!proofFiles || proofFiles.length === 0) return alert("Select at least one file");
+                          try {
+                            setUploadingProof(true);
+                            const fd = new FormData();
+                            fd.append(
+                              "metadata",
+                              JSON.stringify({
+                                campaignId,
+                                milestoneIndex: nextIndex,
+                                note: proofNote,
+                                schema: "verdant-vault.milestone-proof.v1",
+                              })
+                            );
+                            Array.from(proofFiles).forEach((f) => fd.append("files", f));
+                            const res = await fetch("/api/ipfs/upload", { method: "POST", body: fd });
+                            const j = await res.json();
+                            if (!res.ok) throw new Error(j?.error || "IPFS upload failed");
+
+                            await submitMilestoneProof(campaignId, nextIndex, j.cid);
+                          } catch (e: any) {
+                            alert(e?.message || "Upload/submit failed");
+                          } finally {
+                            setUploadingProof(false);
+                            setProofFiles(null);
+                            setProofNote("");
+                          }
+                        }}
+                        disabled={uploadingProof}
+                        className="w-full py-2 bg-blue-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-blue-700 transition"
+                      >
+                        {uploadingProof ? "Uploading & Submitting..." : "Upload & Submit Proof"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Admin Actions */}
+          {false && (
+            <div className="bg-white text-black rounded-lg shadow-lg p-6">
+              <h3 className="text-xl font-bold mb-4">Admin Actions</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Milestone Index (0-3)
+                    Milestone to Approve (0-3)
                   </label>
                   <input
                     type="number"
@@ -401,75 +612,116 @@ export default function CampaignDetails() {
                     placeholder="0"
                     value={milestoneIndex}
                     onChange={(e) => setMilestoneIndex(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Proof IPFS Hash
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="QmXxx..."
-                    value={ipfsHash}
-                    onChange={(e) => setIpfsHash(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
                 <button
-                  onClick={handleSubmitProof}
-                  disabled={isLoading || !milestoneIndex || !ipfsHash}
-                  className="w-full py-2 bg-blue-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-blue-700 transition"
+                  onClick={handleApprove}
+                  disabled={isLoading || !milestoneIndex}
+                  className="w-full py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-purple-700 transition"
                 >
-                  {isLoading ? "Submitting..." : "Submit Proof"}
+                  {isLoading ? "Approving..." : "Approve Milestone"}
+                </button>
+                <button
+                  onClick={() => claimRefund(campaignId)}
+                  disabled={isLoading || !(isExpired && status === 0)}
+                  className="w-full py-2 bg-red-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-red-700 transition"
+                >
+                  {isLoading ? "Claiming..." : "Claim Refund"}
                 </button>
               </div>
             </div>
           )}
-
-          {/* Admin Actions */}
-          <div className="bg-white text-black rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold mb-4">Admin Actions</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Milestone to Approve (0-3)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="3"
-                  placeholder="0"
-                  value={milestoneIndex}
-                  onChange={(e) => setMilestoneIndex(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              <button
-                onClick={handleApprove}
-                disabled={isLoading || !milestoneIndex}
-                className="w-full py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-purple-700 transition"
-              >
-                {isLoading ? "Approving..." : "Approve Milestone"}
-              </button>
-              <button
-                // onClick={() => mintCarbonCredits(campaignId)}
-                disabled={isLoading || status !== 2}
-                className="w-full py-2 bg-green-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-green-700 transition"
-              >
-                {isLoading ? "Minting..." : "Mint Carbon Credits"}
-              </button>
-              <button
-                onClick={() => claimRefund(campaignId)}
-                disabled={isLoading || !(isExpired && status === 0)}
-                className="w-full py-2 bg-red-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-red-700 transition"
-              >
-                {isLoading ? "Claiming..." : "Claim Refund"}
-              </button>
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Proof Review Modal */}
+      {isProofModalOpen && (
+        <Dialog open={isProofModalOpen} onOpenChange={setIsProofModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Milestone Proof Review</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              {reviewMilestoneIndex !== null && milestones?.[reviewMilestoneIndex] && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">Milestone</p>
+                  <p className="font-semibold text-black">
+                    #{reviewMilestoneIndex} — {milestones[reviewMilestoneIndex].description} ({milestones[reviewMilestoneIndex].fundPercentage}%)
+                  </p>
+                </div>
+              )}
+
+              {proofMetadata ? (
+                <>
+                  {proofMetadata.note && (
+                    <p className="text-white">Note: {proofMetadata.note}</p>
+                  )}
+                  {Array.isArray(proofMetadata.files) && proofMetadata.files.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {proofMetadata.files.map((uri: string, idx: number) => {
+                        const cid = uri.replace("ipfs://", "");
+                        const url = `https://ipfs.io/ipfs/${cid}`;
+                        return (
+                          <div key={idx} className="border rounded-lg overflow-hidden">
+                            <img
+                              src={url}
+                              alt={`Proof media ${idx + 1}`}
+                              className="w-full h-32 object-cover bg-gray-100"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-sm text-green-600 hover:underline p-2"
+                            >
+                              View File →
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                reviewMilestoneIndex !== null &&
+                milestones?.[reviewMilestoneIndex]?.proofIpfsHash && (
+                  <a
+                    href={`https://ipfs.io/ipfs/${milestones[reviewMilestoneIndex].proofIpfsHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:underline"
+                  >
+                    Open proof on IPFS →
+                  </a>
+                )
+              )}
+            </div>
+
+            <DialogFooter>
+              {isAdmin &&
+                reviewMilestoneIndex !== null &&
+                milestones?.[reviewMilestoneIndex] &&
+                !milestones[reviewMilestoneIndex].approved && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await approveMilestone(campaignId, reviewMilestoneIndex!);
+                      setIsProofModalOpen(false);
+                    }}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  >
+                    Approve Milestone
+                  </button>
+                )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
