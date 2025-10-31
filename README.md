@@ -291,6 +291,13 @@ function mintCredits(uint256 campaignId) external {
 
 ---
 
+## Hashgraph Hedera Certificates
+
+- George Chisom [Cerificate](https://drive.google.com/file/d/14p3LpcFpW2C2QqGa0VKniW2k3b4FL-qp/view?usp=sharing)
+- Zacheus Israel [Cerificate](https://drive.google.com/file/d/1my6j3xk81VoMEolHBrefvi8qDL46JcEx/view?usp=sharing)
+
+---
+
 ## Possible Roadmap
 
 ### 1. **Farmer Verification Badge**
