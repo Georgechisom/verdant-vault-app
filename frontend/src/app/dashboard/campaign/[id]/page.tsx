@@ -21,6 +21,7 @@ export default function CampaignDetails() {
   const campaignId = Number(params?.id);
   const { address } = useAccount();
   const { adminAddress } = useAdmin();
+  console.log(adminAddress)
 
   const { campaign, isLoading, refetch } = useCampaign(campaignId);
   console.log({campaign})
@@ -159,9 +160,10 @@ export default function CampaignDetails() {
     estimatedCO2Tons,
     status,
   ] = campaign;
-  const raisedHBAR = Number(formatEther(raisedAmount));
+  const raisedHBAR = Number(formatUnits(raisedAmount, 8));
   const goalHBAR = Number(formatUnits(fundingGoal, 8));
   const progress = goalHBAR > 0 ? (raisedHBAR / goalHBAR) * 100 : 0;
+  console.log({goalHBAR, raisedHBAR})
   const isExpired = Number(deadline) * 1000 < Date.now();
   const isFarmer = address?.toLowerCase() === farmer.toLowerCase();
   const isAdmin = !!adminAddress && !!address && adminAddress.toLowerCase() === address.toLowerCase();
@@ -241,7 +243,7 @@ export default function CampaignDetails() {
                   />
                 </div>
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
-                  <span>{formatEther(raisedAmount)} HBAR raised</span>
+                  <span>{formatUnits(raisedAmount, 8)} HBAR raised</span>
                   <span>Goal: {formatUnits(fundingGoal, 8)} HBAR</span>
                 </div>
               </div>
@@ -396,7 +398,7 @@ export default function CampaignDetails() {
                       )}
                     </div>
                     <span className="font-semibold text-green-600">
-                      {formatEther(investment.amount)} HBAR
+                      {formatUnits(investment.amount, 8)} HBAR
                     </span>
                   </div>
                 ))}
@@ -404,7 +406,7 @@ export default function CampaignDetails() {
                   <div className="flex justify-between font-bold">
                     <span>Total Raised</span>
                     <span className="text-green-600">
-                      {formatEther(raisedAmount)} HBAR
+                      {formatUnits(raisedAmount, 8)} HBAR
                     </span>
                   </div>
                 </div>
