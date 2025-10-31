@@ -27,7 +27,7 @@ interface IHederaTokenService {
     ) external returns (int responseCode);
 }
 
-contract VerdantVault {
+contract VerdantVault2 {
     struct FarmCampaign {
         address payable farmer;
         string ipfsMetadata;
@@ -65,11 +65,16 @@ contract VerdantVault {
 
     address public admin;
     address public carbonCreditToken;
+    address payable public platformTreasury;
     IHederaTokenService public hts =
         IHederaTokenService(0x0000000000000000000000000000000000000167);
 
     uint256 public campaignCounter;
+    uint256 public platformFeePercentage = 300; // 3% (basis points)
+    uint256 public totalFeesCollected;
+    
     mapping(uint256 => FarmCampaign) public campaigns;
+    mapping(uint256 => uint256) public campaignBalances; // Track funds per campaign
 
     event CampaignCreated(
         uint256 campaignId,
@@ -95,6 +100,8 @@ contract VerdantVault {
         address indexed investor,
         uint256 amount
     );
+    event PlatformFeeCollected(uint256 indexed campaignId, uint256 feeAmount);
+    event PlatformFeeUpdated(uint256 newPercentage);
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin");
@@ -106,9 +113,10 @@ contract VerdantVault {
         _;
     }
 
-    constructor(address _carbonCreditToken) {
+    constructor(address _carbonCreditToken, address payable _platformTreasury) {
         admin = msg.sender;
         carbonCreditToken = _carbonCreditToken;
+        platformTreasury = _platformTreasury;
     }
 
     function createCampaign(
@@ -157,14 +165,25 @@ contract VerdantVault {
         require(block.timestamp < campaign.deadline, "Campaign ended");
         require(msg.value > 0, "Amount must be > 0");
 
-        campaign.raisedAmount += msg.value;
-        campaign.investments.push(Investment(msg.sender, msg.value, 0, false));
+        // Calculate and collect platform fee
+        uint256 platformFee = (msg.value * platformFeePercentage) / 10000;
+        uint256 investmentAmount = msg.value - platformFee;
+
+        // Transfer fee to treasury
+        platformTreasury.transfer(platformFee);
+        totalFeesCollected += platformFee;
+
+        // Add investment to campaign
+        campaign.raisedAmount += investmentAmount;
+        campaignBalances[_campaignId] += investmentAmount;
+        campaign.investments.push(Investment(msg.sender, investmentAmount, 0, false));
 
         if (campaign.raisedAmount >= campaign.fundingGoal) {
             campaign.status = CampaignStatus.Funded;
         }
 
-        emit InvestmentMade(_campaignId, msg.sender, msg.value);
+        emit InvestmentMade(_campaignId, msg.sender, investmentAmount);
+        emit PlatformFeeCollected(_campaignId, platformFee);
     }
 
     function submitMilestoneProof(
@@ -213,20 +232,32 @@ contract VerdantVault {
         campaign.milestones[_milestoneIndex].approved = true;
         emit MilestoneApproved(_campaignId, _milestoneIndex);
 
-        uint256 amountToRelease = (campaign.fundingGoal *
-            campaign.milestones[_milestoneIndex].fundPercentage) / 100;
-        campaign.farmer.transfer(amountToRelease);
-        emit FundsReleased(_campaignId, amountToRelease);
-
-        bool allApproved = true;
+        // Check if this is the last milestone to be approved
+        bool isLastMilestone = true;
         for (uint i = 0; i < campaign.milestones.length; i++) {
-            if (!campaign.milestones[i].approved) {
-                allApproved = false;
+            if (i != _milestoneIndex && !campaign.milestones[i].approved) {
+                isLastMilestone = false;
                 break;
             }
         }
 
-        if (allApproved) {
+        uint256 amountToRelease;
+        if (isLastMilestone) {
+            // Release all remaining campaign funds for the last milestone
+            amountToRelease = campaignBalances[_campaignId];
+        } else {
+            // Calculate proportional amount based on actual raised amount
+            amountToRelease = (campaign.raisedAmount *
+                campaign.milestones[_milestoneIndex].fundPercentage) / 100;
+        }
+
+        require(campaignBalances[_campaignId] >= amountToRelease, "Insufficient campaign balance");
+        
+        campaignBalances[_campaignId] -= amountToRelease;
+        campaign.farmer.transfer(amountToRelease);
+        emit FundsReleased(_campaignId, amountToRelease);
+
+        if (isLastMilestone) {
             campaign.status = CampaignStatus.Completed;
             _mintCarbonCredits(_campaignId);
         }
@@ -328,6 +359,9 @@ contract VerdantVault {
         }
 
         require(refundAmount > 0, "No investment found");
+        require(campaignBalances[_campaignId] >= refundAmount, "Insufficient balance");
+        
+        campaignBalances[_campaignId] -= refundAmount;
         payable(msg.sender).transfer(refundAmount);
 
         if (campaign.status != CampaignStatus.Failed) {
@@ -357,5 +391,20 @@ contract VerdantVault {
         uint256 _campaignId
     ) external view returns (uint256) {
         return campaigns[_campaignId].investments.length;
+    }
+
+    function getCampaignBalance(uint256 _campaignId) external view returns (uint256) {
+        return campaignBalances[_campaignId];
+    }
+
+    function setPlatformFee(uint256 _newFeePercentage) external onlyAdmin {
+        require(_newFeePercentage <= 500, "Fee cannot exceed 5%");
+        platformFeePercentage = _newFeePercentage;
+        emit PlatformFeeUpdated(_newFeePercentage);
+    }
+
+    function updateTreasury(address payable _newTreasury) external onlyAdmin {
+        require(_newTreasury != address(0), "Invalid address");
+        platformTreasury = _newTreasury;
     }
 }
