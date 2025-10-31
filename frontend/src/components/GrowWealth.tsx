@@ -5,23 +5,23 @@ const features = [
   {
     icon: Database,
     title: "Soil Sensor Data",
-    description: "Capture real-time farming data directly from your fields"
+    description: "Capture real-time farming data directly from your fields",
   },
   {
     icon: CheckCircle,
     title: "AI Validation",
-    description: "Ensure data's authenticity via climate impact verification"
+    description: "Ensure data's authenticity via climate impact verification",
   },
   {
     icon: Coins,
-    title: "Mint NFT",
-    description: "Convert verified data into a secure digital credit"
+    title: "Carbon Credit",
+    description: "Convert verified data into a secure digital credit",
   },
   {
     icon: TrendingUp,
     title: "Trade & Reward",
-    description: "Access global markets and earn additional incentives"
-  }
+    description: "Access global markets and earn additional incentives",
+  },
 ];
 
 const GrowWealth = () => {
@@ -35,21 +35,21 @@ const GrowWealth = () => {
               Grow Wealth from the Ground Up
             </h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Verdant Vault bridges the Gap—3% carbon data trust your fields in HTS NFTs for instant
-              liquidity. We make education ESG industries, gamified rewards, and HCS health-tier
-              transparent.
+              Verdant Vault bridges the Gap—3% carbon data trust your fields in
+              HTS for instant liquidity. We make education ESG industries,
+              gamified rewards, and HCS health tier transparent.
             </p>
             <p className="text-lg text-muted-foreground">
-              We believe that every smallholder farmer deserves access to global carbon markets,
-              turning their sustainable practices into verifiable digital assets—your investment in
-              greenhouse.
+              We believe that every smallholder farmer deserves access to global
+              carbon markets, turning their sustainable practices into
+              verifiable digital assets your investment in greenhouse.
             </p>
           </div>
 
           {/* Right Features */}
           <div className="space-y-4 animate-fade-in">
             {features.map((feature, index) => (
-              <Card 
+              <Card
                 key={index}
                 className="p-6 bg-card hover:shadow-[var(--card-shadow)] transition-all duration-300 hover:translate-x-2"
               >
