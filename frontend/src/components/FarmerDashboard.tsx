@@ -55,7 +55,7 @@ export default function FarmerDashboard() {
         </div>
 
         <div className="grid grid-cols-1">
-          <Link href="/submit-project" className="btn-primary text-center py-3">
+          <Link href="/dashboard/create-campaign" className="btn-primary text-center py-3">
             Create New Campaign
           </Link>
         </div>

@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useVerdantVault, useCampaignCounter, useCampaign } from '../../../hooks/useVerdantVault';
-import { formatEther, formatUnits } from 'viem';
-import { useWaitForTransactionReceipt } from 'wagmi';
+import { useVerdantVault, useCampaignCounter, useCampaign, ABI, CONTRACT_ADDRESS } from '../../../hooks/useVerdantVault';
+import { formatUnits } from 'viem';
+import { useWaitForTransactionReceipt, useWatchContractEvent } from 'wagmi';
 
 interface Campaign {
   id: number;
@@ -20,11 +20,33 @@ interface Campaign {
 
 const CampaignCard = ({ id }: { id: number }) => {
   const router = useRouter();
-  const { campaign } = useCampaign(id);
+  const { campaign, refetch } = useCampaign(id);
   const { invest, hash } = useVerdantVault();
-  const { isSuccess, isLoading} = useWaitForTransactionReceipt({hash})
+  const { isSuccess, isLoading } = useWaitForTransactionReceipt({ hash });
   const [investAmount, setInvestAmount] = useState('');
-  console.log(campaign)
+  console.log(campaign);
+
+  // Watch investments for this campaign to refresh the card
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: 'InvestmentMade',
+    args: { campaignId: BigInt(id) },
+    onLogs() {
+      refetch();
+    }
+  });
+
+  // Watch milestone approvals to refresh status/raised/etc.
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: 'MilestoneApproved',
+    args: { campaignId: BigInt(id) },
+    onLogs() {
+      refetch();
+    }
+  });
 
   useEffect(() => {
     if (isSuccess) {
@@ -42,7 +64,7 @@ const CampaignCard = ({ id }: { id: number }) => {
   };
 
   const getStatusText = (status: number) => {
-    const statuses = ['Active', 'Funded', 'Completed', 'Failed'];
+    const statuses = ['Active', 'Funded', 'Completed', 'Failed', 'Canceled'];
     return statuses[status] || 'Unknown';
   };
 
@@ -115,8 +137,18 @@ const CampaignCard = ({ id }: { id: number }) => {
 };
 
 export default function CampaignList() {
-  const { count } = useCampaignCounter();
-  const campaignIds = Array.from({ length: count }, (_, i) => i);
+  const { count, refetch } = useCampaignCounter();
+  const campaignIds = Array.from({ length: count }, (_, i) => i + 1);
+
+  // Watch newly created campaigns → refresh list
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: 'CampaignCreated',
+    onLogs() {
+      refetch?.();
+    },
+  });
 
   return (
     <div className="space-y-4">

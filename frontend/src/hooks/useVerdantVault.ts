@@ -1,14 +1,15 @@
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { parseEther, parseUnits } from 'viem';
 
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}` || '0x';
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}` || '0x';
 
-const ABI = [
+export const ABI = [
   {
     inputs: [{ internalType: "address", name: "_carbonCreditToken", type: "address" }],
     stateMutability: "nonpayable",
     type: "constructor"
   },
+  // Functions
   {
     inputs: [
       { internalType: "string", name: "_ipfsMetadata", type: "string" },
@@ -63,6 +64,7 @@ const ABI = [
     stateMutability: "nonpayable",
     type: "function"
   },
+  // Views
   {
     inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     name: "campaigns",
@@ -160,6 +162,75 @@ const ABI = [
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function"
+  },
+  // Events
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: false, internalType: "uint256", name: "campaignId", type: "uint256" },
+      { indexed: true, internalType: "address", name: "farmer", type: "address" },
+      { indexed: false, internalType: "uint256", name: "fundingGoal", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "deadline", type: "uint256" }
+    ],
+    name: "CampaignCreated",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "campaignId", type: "uint256" },
+      { indexed: true, internalType: "address", name: "investor", type: "address" },
+      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" }
+    ],
+    name: "InvestmentMade",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "campaignId", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "milestoneIndex", type: "uint256" },
+      { indexed: false, internalType: "string", name: "ipfsHash", type: "string" }
+    ],
+    name: "MilestoneProofSubmitted",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "campaignId", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "milestoneIndex", type: "uint256" }
+    ],
+    name: "MilestoneApproved",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "campaignId", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" }
+    ],
+    name: "FundsReleased",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "campaignId", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "totalAmount", type: "uint256" }
+    ],
+    name: "CarbonCreditsMinted",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "campaignId", type: "uint256" },
+      { indexed: true, internalType: "address", name: "investor", type: "address" },
+      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" }
+    ],
+    name: "CarbonCreditsClaimed",
+    type: "event"
   }
 ] as const;
 
@@ -265,7 +336,7 @@ export const useCampaign = (campaignId: number) => {
 };
 
 export const useCampaignCounter = () => {
-  const { data, isLoading } = useReadContract({
+  const { data, isLoading, refetch } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: ABI,
     functionName: 'campaignCounter',
@@ -274,6 +345,7 @@ export const useCampaignCounter = () => {
   return {
     count: data ? Number(data) : 0,
     isLoading,
+    refetch
   };
 };
 

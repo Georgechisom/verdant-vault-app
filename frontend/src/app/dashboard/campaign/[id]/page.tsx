@@ -7,9 +7,12 @@ import {
   useVerdantVault,
   useMilestones,
   useInvestments,
+  useAdmin,
+  ABI,
+  CONTRACT_ADDRESS,
 } from "../../../../hooks/useVerdantVault";
 import { formatEther, formatUnits } from "viem";
-import { useAccount, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWaitForTransactionReceipt, useWatchContractEvent } from "wagmi";
 import { CheckCircle, Clock, FileText } from "lucide-react";
 
 export default function CampaignDetails() {
@@ -17,6 +20,7 @@ export default function CampaignDetails() {
   const router = useRouter();
   const campaignId = Number(params?.id);
   const { address } = useAccount();
+  const { adminAddress } = useAdmin();
 
   const { campaign, isLoading, refetch } = useCampaign(campaignId);
   console.log({campaign})
@@ -45,6 +49,9 @@ export default function CampaignDetails() {
   const [milestoneIndex, setMilestoneIndex] = useState("");
   const [ipfsHash, setIpfsHash] = useState("");
   const [metadata, setMetadata] = useState<any>(null);
+  const [proofFiles, setProofFiles] = useState<FileList | null>(null);
+  const [proofNote, setProofNote] = useState("");
+  const [uploadingProof, setUploadingProof] = useState(false);
 
   useEffect(() => {
     if (isSuccess) {
@@ -62,6 +69,60 @@ export default function CampaignDetails() {
       fetchMetadata(campaign[1]);
     }
   }, [campaign]);
+
+  // Watch on-chain events and refetch data (keeps UI in sync)
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "InvestmentMade",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+      refetchInvestments();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "MilestoneProofSubmitted",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetchMilestones();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "MilestoneApproved",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+      refetchMilestones();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "FundsReleased",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+    },
+  });
+
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "CarbonCreditsMinted",
+    args: { campaignId: BigInt(campaignId) },
+    onLogs() {
+      refetch();
+      refetchInvestments();
+    },
+  });
 
   const fetchMetadata = async (ipfsHash: string) => {
     try {
@@ -98,13 +159,13 @@ export default function CampaignDetails() {
     estimatedCO2Tons,
     status,
   ] = campaign;
-  const progress =
-    Number(raisedAmount) > 0
-      ? Number(formatUnits(raisedAmount, 8))/ Number(formatEther(fundingGoal)) * 100
-      : 0;
+  const raisedHBAR = Number(formatEther(raisedAmount));
+  const goalHBAR = Number(formatUnits(fundingGoal, 8));
+  const progress = goalHBAR > 0 ? (raisedHBAR / goalHBAR) * 100 : 0;
   const isExpired = Number(deadline) * 1000 < Date.now();
   const isFarmer = address?.toLowerCase() === farmer.toLowerCase();
-  console.log(isFarmer);
+  const isAdmin = !!adminAddress && !!address && adminAddress.toLowerCase() === address.toLowerCase();
+  console.log({ isFarmer, isAdmin });
 
   const getStatusText = (status: number) => {
     const statuses = ["Active", "Funded", "Completed", "Failed", "Canceled"];
@@ -180,7 +241,7 @@ export default function CampaignDetails() {
                   />
                 </div>
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
-                  <span>{formatUnits(raisedAmount, 8)} HBAR raised</span>
+                  <span>{formatEther(raisedAmount)} HBAR raised</span>
                   <span>Goal: {formatUnits(fundingGoal, 8)} HBAR</span>
                 </div>
               </div>
@@ -327,15 +388,15 @@ export default function CampaignDetails() {
                         {investment.investor.slice(0, 6)}...
                         {investment.investor.slice(-4)}
                       </p>
-                      {investment.creditsClaimed > 0 && (
+                      {investment.creditsEarned > 0 && (
                         <p className="text-xs text-green-600 mt-1">
-                          Credits: {formatUnits(investment.creditsClaimed, 18)}{" "}
+                          Credits: {formatUnits(investment.creditsEarned, 18)}{" "}
                           tons
                         </p>
                       )}
                     </div>
                     <span className="font-semibold text-green-600">
-                      {formatUnits(investment.amount, 8)} HBAR
+                      {formatEther(investment.amount)} HBAR
                     </span>
                   </div>
                 ))}
@@ -343,7 +404,7 @@ export default function CampaignDetails() {
                   <div className="flex justify-between font-bold">
                     <span>Total Raised</span>
                     <span className="text-green-600">
-                      {formatUnits(raisedAmount, 8)} HBAR
+                      {formatEther(raisedAmount)} HBAR
                     </span>
                   </div>
                 </div>
@@ -386,9 +447,12 @@ export default function CampaignDetails() {
           )}
 
           {/* Farmer Actions */}
-          {isFarmer && status === 0 && (
+          {isFarmer && status === 1 && (
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-bold mb-4">Farmer Actions</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Submit milestone proof once work is completed. Upload files to IPFS and then submit the returned CID.
+              </p>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -404,9 +468,61 @@ export default function CampaignDetails() {
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Upload Proof Files (images/PDFs)</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    onChange={(e) => setProofFiles(e.target.files)}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <textarea
+                    placeholder="Optional note about this milestone proof"
+                    value={proofNote}
+                    onChange={(e) => setProofNote(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg"
+                    rows={3}
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!milestoneIndex) return alert("Set a milestone index first");
+                      if (!proofFiles || proofFiles.length === 0) return alert("Select at least one file");
+                      try {
+                        setUploadingProof(true);
+                        const fd = new FormData();
+                        fd.append(
+                          "metadata",
+                          JSON.stringify({
+                            campaignId,
+                            milestoneIndex: Number(milestoneIndex),
+                            note: proofNote,
+                            schema: "verdant-vault.milestone-proof.v1",
+                          })
+                        );
+                        Array.from(proofFiles).forEach((f) => fd.append("files", f));
+                        const res = await fetch("/api/ipfs/upload", { method: "POST", body: fd });
+                        const j = await res.json();
+                        if (!res.ok) throw new Error(j?.error || "IPFS upload failed");
+                        setIpfsHash(j.cid);
+                      } catch (e: any) {
+                        alert(e?.message || "Upload failed");
+                      } finally {
+                        setUploadingProof(false);
+                      }
+                    }}
+                    disabled={uploadingProof || !milestoneIndex}
+                    className="w-full py-2 bg-gray-800 text-white rounded-lg disabled:bg-gray-400 hover:bg-gray-900 transition"
+                  >
+                    {uploadingProof ? "Uploading to IPFS..." : "Upload Files to IPFS"}
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Proof IPFS Hash
+                    Proof IPFS CID
                   </label>
                   <input
                     type="text"
@@ -415,7 +531,18 @@ export default function CampaignDetails() {
                     onChange={(e) => setIpfsHash(e.target.value)}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  {ipfsHash && (
+                    <a
+                      href={`https://ipfs.io/ipfs/${ipfsHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:underline text-sm mt-2 inline-block"
+                    >
+                      Preview proof on IPFS →
+                    </a>
+                  )}
                 </div>
+
                 <button
                   onClick={handleSubmitProof}
                   disabled={isLoading || !milestoneIndex || !ipfsHash}
@@ -428,46 +555,41 @@ export default function CampaignDetails() {
           )}
 
           {/* Admin Actions */}
-          <div className="bg-white text-black rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold mb-4">Admin Actions</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Milestone to Approve (0-3)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="3"
-                  placeholder="0"
-                  value={milestoneIndex}
-                  onChange={(e) => setMilestoneIndex(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+          {isAdmin && (
+            <div className="bg-white text-black rounded-lg shadow-lg p-6">
+              <h3 className="text-xl font-bold mb-4">Admin Actions</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Milestone to Approve (0-3)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="3"
+                    placeholder="0"
+                    value={milestoneIndex}
+                    onChange={(e) => setMilestoneIndex(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <button
+                  onClick={handleApprove}
+                  disabled={isLoading || !milestoneIndex}
+                  className="w-full py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-purple-700 transition"
+                >
+                  {isLoading ? "Approving..." : "Approve Milestone"}
+                </button>
+                <button
+                  onClick={() => claimRefund(campaignId)}
+                  disabled={isLoading || !(isExpired && status === 0)}
+                  className="w-full py-2 bg-red-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-red-700 transition"
+                >
+                  {isLoading ? "Claiming..." : "Claim Refund"}
+                </button>
               </div>
-              <button
-                onClick={handleApprove}
-                disabled={isLoading || !milestoneIndex}
-                className="w-full py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-purple-700 transition"
-              >
-                {isLoading ? "Approving..." : "Approve Milestone"}
-              </button>
-              <button
-                // onClick={() => mintCarbonCredits(campaignId)}
-                disabled={isLoading || status !== 2}
-                className="w-full py-2 bg-green-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-green-700 transition"
-              >
-                {isLoading ? "Minting..." : "Mint Carbon Credits"}
-              </button>
-              <button
-                onClick={() => claimRefund(campaignId)}
-                disabled={isLoading || !(isExpired && status === 0)}
-                className="w-full py-2 bg-red-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-red-700 transition"
-              >
-                {isLoading ? "Claiming..." : "Claim Refund"}
-              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
