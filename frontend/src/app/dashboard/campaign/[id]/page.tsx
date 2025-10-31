@@ -211,7 +211,7 @@ export default function CampaignDetails() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 text-black pt-0">
+    <div className="min-h-screen flex flex-col bg-background bckgimage text-black">
       <button
         onClick={() => router.back()}
         className="mb-6 text-green-600 hover:text-green-700 flex items-center gap-2"
@@ -597,7 +597,7 @@ export default function CampaignDetails() {
           )}
 
           {/* Admin Actions */}
-          {isAdmin && (
+          {false && (
             <div className="bg-white text-black rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-bold mb-4">Admin Actions</h3>
               <div className="space-y-4">

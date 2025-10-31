@@ -12,26 +12,14 @@ import {
 import { formatUnits } from "viem";
 import { useWaitForTransactionReceipt, useWatchContractEvent } from "wagmi";
 
-interface Campaign {
-  id: number;
-  farmer: string;
-  ipfsMetadata: string;
-  fundingGoal: bigint;
-  raisedAmount: bigint;
-  deadline: bigint;
-  estimatedCO2Tons: bigint;
-  status: number;
-}
-
-const CampaignCard = ({ id }: { id: number }) => {
+const ActiveCampaignCard = ({ id }: { id: number }) => {
   const router = useRouter();
   const { campaign, refetch } = useCampaign(id);
   const { invest, hash } = useVerdantVault();
   const { isSuccess, isLoading } = useWaitForTransactionReceipt({ hash });
   const [investAmount, setInvestAmount] = useState("");
-  console.log(campaign);
 
-  // Watch investments for this campaign to refresh the card
+  // Refresh card data when investment is made
   useWatchContractEvent({
     address: CONTRACT_ADDRESS,
     abi: ABI,
@@ -42,7 +30,7 @@ const CampaignCard = ({ id }: { id: number }) => {
     },
   });
 
-  // Watch milestone approvals to refresh status/raised/etc.
+  // Refresh card data when milestone approval might change status
   useWatchContractEvent({
     address: CONTRACT_ADDRESS,
     abi: ABI,
@@ -71,6 +59,9 @@ const CampaignCard = ({ id }: { id: number }) => {
     status,
   ] = campaign;
 
+  // Only show Active (status === 0)
+  if (status !== 0) return null;
+
   const handleInvest = async () => {
     if (!investAmount) return;
     await invest(id, investAmount);
@@ -83,12 +74,10 @@ const CampaignCard = ({ id }: { id: number }) => {
 
   return (
     <div
-      className="border rounded-lg p-6 space-y-4 cursor-pointer hover:shadow-lg transition-shadow"
+      className="border rounded-lg p-6 space-y-4 cursor-pointer hover:shadow-lg transition-shadow bg-white"
       onClick={(e) => {
-        if (
-          (e.target as HTMLElement).tagName !== "INPUT" &&
-          (e.target as HTMLElement).tagName !== "BUTTON"
-        ) {
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag !== "INPUT" && tag !== "BUTTON") {
           router.push(`/dashboard/campaign/${id}`);
         }
       }}
@@ -128,7 +117,7 @@ const CampaignCard = ({ id }: { id: number }) => {
         </div>
       </div>
 
-      <div className="flex gap-2 hidden">
+      <div className="flex gap-2">
         <input
           type="number"
           step="0.01"
@@ -156,11 +145,11 @@ const CampaignCard = ({ id }: { id: number }) => {
   );
 };
 
-export default function CampaignList() {
-  const { count, refetch, isLoading } = useCampaignCounter();
+export default function InvestIndexPage() {
+  const { count, refetch } = useCampaignCounter();
   const campaignIds = Array.from({ length: count }, (_, i) => i + 1);
 
-  // Watch newly created campaigns → refresh list
+  // Refresh list when campaigns are created
   useWatchContractEvent({
     address: CONTRACT_ADDRESS,
     abi: ABI,
@@ -172,21 +161,16 @@ export default function CampaignList() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Active Campaigns</h2>
-      {isLoading ? (
-        <p>Loading campaigns...</p>
+      <h2 className="text-2xl font-bold">Invest in Active Campaigns</h2>
+      <p className="text-gray-600">
+        Browse all campaigns currently open for investment, view funding
+        progress, and invest directly.
+      </p>
+
+      {count === 0 ? (
+        <p className="text-gray-500">No campaigns found</p>
       ) : (
-        <>
-          {count === 0 ? (
-            <p className="text-gray-500">No campaigns found</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {campaignIds.map((id) => (
-                <CampaignCard key={id} id={id} />
-              ))}
-            </div>
-          )}
-        </>
+        campaignIds.map((id) => <ActiveCampaignCard key={id} id={id} />)
       )}
     </div>
   );
